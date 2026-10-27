@@ -49,7 +49,7 @@ function TaskCard({ task }: TaskCardProps) {
             <Badge variant={task.completed ? 'success' : 'info'}>
               {task.completed ? 'Completed' : 'Active'}
             </Badge>
-            <p className="text-sm text-muted-foreground italic">
+            <p className="text-sm text-muted-foreground italic text-nowrap max-sm:hidden">
               created {formatDistanceToNow(task.createdAt, { addSuffix: true })}
             </p>
           </div>
