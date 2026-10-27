@@ -129,7 +129,7 @@ function TasksList({ tasks, loading }: TasksListProps) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
         {loading ? (
           <Count count={4} render={(idx) => <TaskCardSkeleton key={idx} />} />
         ) : isTasksEmpty ? (

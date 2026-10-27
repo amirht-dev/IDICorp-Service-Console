@@ -18,11 +18,15 @@ import {
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { DevTool } from '@hookform/devtools';
-import { PlusIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import type { Arrayable } from 'type-fest';
 
-const CreateTaskButton = () => {
+type CreateTaskDialogProps = {
+  trigger: Arrayable<ReactElement>;
+};
+
+const CreateTaskDialog = ({ trigger }: CreateTaskDialogProps) => {
   const [open, setOpen] = useState(false);
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -31,7 +35,7 @@ const CreateTaskButton = () => {
     },
   });
   const submitHandler = handleSubmit((data) => {
-    console.log('🚀 ~ CreateTaskButton ~ data:', data);
+    console.log('🚀 ~ CreateTaskDialog ~ data:', data);
     reset();
     setOpen(false);
   });
@@ -39,14 +43,9 @@ const CreateTaskButton = () => {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger
-          render={
-            <Button size="lg">
-              <PlusIcon />
-              Create New Task
-            </Button>
-          }
-        />
+        {Array.isArray(trigger)
+          ? trigger.map((t, idx) => <DialogTrigger render={t} key={idx} />)
+          : trigger}
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Create new Task</DialogTitle>
@@ -118,4 +117,4 @@ const CreateTaskButton = () => {
   );
 };
 
-export default CreateTaskButton;
+export default CreateTaskDialog;

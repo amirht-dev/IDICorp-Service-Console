@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/Button';
 import {
   DetailCard,
   DetailCardContent,
@@ -6,8 +7,8 @@ import {
   DetailCardMedia,
   DetailCardTitle,
 } from '@/components/ui/DetailCard';
-import { CheckIcon } from 'lucide-react';
-import CreateTaskButton from '../CreateTaskButton';
+import { CheckIcon, PlusIcon } from 'lucide-react';
+import CreateTaskDialog from '../CreateTaskDialog';
 
 type EmptyTasksCardProps = { type: 'all' | 'active' | 'completed' };
 
@@ -30,7 +31,16 @@ const EmptyTasksCard = ({ type }: EmptyTasksCardProps) => {
         </DetailCardDescription>
       </DetailCardHeader>
       <DetailCardContent>
-        {type === 'all' && <CreateTaskButton />}
+        {type === 'all' && (
+          <CreateTaskDialog
+            trigger={
+              <Button size="lg">
+                <PlusIcon />
+                Create New Task
+              </Button>
+            }
+          />
+        )}
       </DetailCardContent>
     </DetailCard>
   );
