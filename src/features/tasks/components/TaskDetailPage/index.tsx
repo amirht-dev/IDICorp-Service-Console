@@ -1,4 +1,3 @@
-import Header from '@/components/shared/Header';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { demoTasks } from '@/data/demo';
@@ -11,8 +10,7 @@ const TaskDetailPage = () => {
   const navigate = useNavigate();
   const task = demoTasks[0];
   return (
-    <div className="container">
-      <Header />
+    <div>
       <div className="flex justify-between items-start gap-1">
         <div className="flex gap-2 items-start">
           <>

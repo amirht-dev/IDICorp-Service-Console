@@ -1,3 +1,4 @@
+import Header from '@/components/shared/Header';
 import Sidebar from '@/components/shared/Sidebar';
 import { Outlet } from 'react-router';
 
@@ -9,7 +10,10 @@ const DashboardLayout = () => {
       </aside>
 
       <div className="flex-1 px-4 py-3 lg:p-6">
-        <Outlet />
+        <div className="container">
+          <Header />
+          <Outlet />
+        </div>
       </div>
     </div>
   );
