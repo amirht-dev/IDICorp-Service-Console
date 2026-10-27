@@ -1,50 +1,13 @@
-import calc_image from '@/assets/images/calculator.webp';
-import echo_image from '@/assets/images/echo.webp';
-import logo_image from '@/assets/images/logo_text_row_dark.webp';
-import streaming_image from '@/assets/images/streaming.webp';
-import tasks_image from '@/assets/images/tasks.webp';
-import { Button } from '@/components/ui/Button';
-import { cn } from 'cn';
-import { LogOutIcon } from 'lucide-react';
-import { NavLink, Outlet } from 'react-router';
-
-const navLinks = [
-  { label: 'Tasks', to: '/tasks', image: tasks_image },
-  { label: 'Calculator', to: '/calculator', image: calc_image },
-  { label: 'Echo', to: '/echo', image: echo_image },
-  { label: 'Streaming', to: '/streaming', image: streaming_image },
-];
+import Sidebar from '@/components/shared/Sidebar';
+import { Outlet } from 'react-router';
 
 const DashboardLayout = () => {
   return (
     <div className="flex min-h-dvh items-start">
-      <aside className="h-dvh basis-sm grow-0 bg-sidebar text-sidebar-foreground shrink-0 px-4 py-8 flex flex-col sticky top-0">
-        <img src={logo_image} alt="" className="w-50" />
-
-        <ul className="flex flex-col mt-14 gap-3">
-          {navLinks.map((item, idx) => (
-            <li key={idx}>
-              <NavLink
-                to={item.to}
-                className={({ isActive }) =>
-                  cn(
-                    'flex gap-2 items-center text-lg p-2.5 rounded-md transition-all',
-                    isActive ? 'bg-sidebar-foreground/10' : '',
-                  )
-                }
-              >
-                <img src={item.image} alt={item.label} className="w-10" />
-                {item.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-
-        <Button variant="secondary" size="xl" className="mt-auto">
-          Sign out
-          <LogOutIcon />
-        </Button>
+      <aside className="basis-sm grow-0 shrink-0 sticky top-0 max-lg:hidden">
+        <Sidebar />
       </aside>
+
       <div className="flex-1 p-6">
         <div className="max-w-7xl mx-auto">
           <Outlet />
