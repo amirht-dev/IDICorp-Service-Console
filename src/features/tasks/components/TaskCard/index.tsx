@@ -19,8 +19,9 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
-import EditTaskDialog from '../EditTaskDialog';
 import DeleteTaskDialog from '../DeleteTaskDialog';
+import EditTaskDialog from '../EditTaskDialog';
+import { Badge } from '@/components/ui/Badge';
 
 type TaskCardProps = {
   id: string;
@@ -67,9 +68,14 @@ function TaskCard({
           >
             {description}
           </p>
-          <p className="text-sm text-muted-foreground italic mt-auto">
-            created {formatDistanceToNow(createdAt, { addSuffix: true })}
-          </p>
+          <div className="mt-auto flex items-center gap-3">
+            <Badge variant={completed ? 'success' : 'info'}>
+              {completed ? 'Completed' : 'Active'}
+            </Badge>
+            <p className="text-sm text-muted-foreground italic">
+              created {formatDistanceToNow(createdAt, { addSuffix: true })}
+            </p>
+          </div>
         </div>
 
         <DropdownMenu>
