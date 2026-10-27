@@ -11,7 +11,7 @@ import TasksList from '../TaskList';
 const TasksPage = () => {
   const isError = false;
   return (
-    <div>
+    <div className="container">
       <div className="flex items-center justify-between">
         <h4 className="text-3xl font-semibold">Tasks</h4>
 

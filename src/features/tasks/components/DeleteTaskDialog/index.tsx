@@ -12,10 +12,11 @@ import {
 } from '@/components/ui/AlertDialog';
 import { Trash2Icon } from 'lucide-react';
 import type { ComponentProps, ReactElement } from 'react';
+import type { Arrayable } from 'type-fest';
 
 type DeleteTaskDialogProps = {
   // taskId: string
-  trigger?: ReactElement;
+  trigger?: Arrayable<ReactElement>;
 } & Pick<ComponentProps<typeof AlertDialog>, 'open' | 'onOpenChange'>;
 
 const DeleteTaskDialog = ({
@@ -25,7 +26,9 @@ const DeleteTaskDialog = ({
 }: DeleteTaskDialogProps) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogTrigger render={trigger} />
+      {Array.isArray(trigger)
+        ? trigger.map((t, idx) => <AlertDialogTrigger key={idx} render={t} />)
+        : trigger && <AlertDialogTrigger render={trigger} />}
       <AlertDialogContent size="sm">
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">

@@ -7,6 +7,9 @@ const DashboardLayout = lazy(
 );
 const SignInPage = lazy(() => import('@/features/auth/components/SignInPage'));
 const TasksPage = lazy(() => import('@/features/tasks/components/TasksPage'));
+const TaskDetailPage = lazy(
+  () => import('@/features/tasks/components/TaskDetailPage'),
+);
 
 function App() {
   return (
@@ -14,6 +17,7 @@ function App() {
       <Route path="sign-in" element={<SignInPage />} />
       <Route element={<DashboardLayout />}>
         <Route path="tasks" element={<TasksPage />} />
+        <Route path="tasks/:taskId" element={<TaskDetailPage />} />
       </Route>
     </Routes>
   );

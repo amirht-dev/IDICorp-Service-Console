@@ -142,4 +142,7 @@
   [role='button']:not(:disabled) {
     cursor: pointer;
   }
+  .container {
+    @apply max-w-7xl! mx-auto;
+  }
 }

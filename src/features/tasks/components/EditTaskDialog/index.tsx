@@ -21,9 +21,10 @@ import { Textarea } from '@/components/ui/Textarea';
 import { DevTool } from '@hookform/devtools';
 import { type ComponentProps, type ReactElement } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import type { Arrayable } from 'type-fest';
 
 type EditTaskDialogProps = {
-  trigger?: ReactElement;
+  trigger?: Arrayable<ReactElement>;
   // taskId: string
 } & Pick<ComponentProps<typeof Dialog>, 'open' | 'onOpenChange'>;
 
@@ -47,7 +48,9 @@ const EditTaskDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        {trigger && <DialogTrigger render={trigger} />}
+        {Array.isArray(trigger)
+          ? trigger.map((t, idx) => <DialogTrigger key={idx} render={t} />)
+          : trigger && <DialogTrigger render={trigger} />}
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Task</DialogTitle>

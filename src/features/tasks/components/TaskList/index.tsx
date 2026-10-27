@@ -139,17 +139,7 @@ function TasksList({ tasks, loading }: TasksListProps) {
             type={statusTab === 'active' ? 'active' : 'completed'}
           />
         ) : (
-          sortedTasks.map((task) => (
-            <TaskCard
-              id={task.id}
-              key={task.id}
-              title={task.title}
-              description={task.description}
-              completed={task.completed}
-              createdAt={task.createdAt}
-              updatedAt={task.updatedAt}
-            />
-          ))
+          sortedTasks.map((task) => <TaskCard key={task.id} task={task} />)
         )}
       </div>
     </Tabs>
