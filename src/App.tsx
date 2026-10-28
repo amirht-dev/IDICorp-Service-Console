@@ -10,6 +10,9 @@ const TasksPage = lazy(() => import('@/features/tasks/components/TasksPage'));
 const TaskDetailPage = lazy(
   () => import('@/features/tasks/components/TaskDetailPage'),
 );
+const CalculatorPage = lazy(
+  () => import('@/features/calculator/components/CalculatorPage'),
+);
 
 function App() {
   return (
@@ -18,6 +21,7 @@ function App() {
       <Route element={<DashboardLayout />}>
         <Route path="tasks" element={<TasksPage />} />
         <Route path="tasks/:taskId" element={<TaskDetailPage />} />
+        <Route path="calculator" element={<CalculatorPage />} />
       </Route>
     </Routes>
   );
