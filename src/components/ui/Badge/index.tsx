@@ -20,6 +20,8 @@ const badgeVariants = cva(
         link: 'text-primary underline-offset-4 hover:underline',
         info: 'bg-info/15 text-info [a]:hover:bg-info/80',
         success: 'bg-success/15 text-success [a]:hover:bg-success/80',
+        warning: 'bg-warning/15 text-warning [a]:hover:bg-warning/80',
+        error: 'bg-error/15 text-error [a]:hover:bg-error/80',
       },
     },
     defaultVariants: {

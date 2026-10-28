@@ -43,6 +43,10 @@
   --color-info-foreground: var(--info-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -89,6 +93,10 @@
   --info-foreground: oklch(1 0 0);
   --success: oklch(69.6% 0.17 162.48);
   --success-foreground: oklch(1 0 0);
+  --warning: oklch(79.5% 0.184 86.047);
+  --warning-foreground: oklch(1 0 0);
+  --error: oklch(57.7% 0.245 27.325);
+  --error-foreground: oklch(1 0 0);
 }
 
 .dark {
