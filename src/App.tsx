@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
 import './App.css';
 
 const DashboardLayout = lazy(
@@ -22,6 +22,7 @@ function App() {
   return (
     <Routes>
       <Route path="sign-in" element={<SignInPage />} />
+      <Route index element={<Navigate to="/tasks" />} />
       <Route element={<DashboardLayout />}>
         <Route path="tasks" element={<TasksPage />} />
         <Route path="tasks/:taskId" element={<TaskDetailPage />} />
