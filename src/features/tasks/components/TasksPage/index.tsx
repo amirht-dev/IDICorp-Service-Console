@@ -1,4 +1,3 @@
-import NavigationDrawer from '@/components/shared/NavigationDrawer';
 import { Button } from '@/components/ui/Button';
 import { demoTasks } from '@/data/demo';
 import SearchInput from '@/features/tasks/components/SearchInput';
@@ -27,7 +26,6 @@ const TasksPage = () => {
               </Button>,
             ]}
           />
-          <NavigationDrawer />
         </div>
       </div>
 
