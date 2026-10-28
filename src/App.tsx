@@ -14,6 +14,9 @@ const CalculatorPage = lazy(
   () => import('@/features/calculator/components/CalculatorPage'),
 );
 const EchoPage = lazy(() => import('@/features/echo/components/EchoPage'));
+const StreamingPage = lazy(
+  () => import('@/features/streaming/components/StreamingPage'),
+);
 
 function App() {
   return (
@@ -24,6 +27,7 @@ function App() {
         <Route path="tasks/:taskId" element={<TaskDetailPage />} />
         <Route path="calculator" element={<CalculatorPage />} />
         <Route path="echo" element={<EchoPage />} />
+        <Route path="streaming" element={<StreamingPage />} />
       </Route>
     </Routes>
   );
