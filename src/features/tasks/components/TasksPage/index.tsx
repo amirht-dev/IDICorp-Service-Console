@@ -6,13 +6,14 @@ import CreateTaskDialog from '../CreateTaskDialog';
 import EmptyTasksCard from '../EmptyTasksCard';
 import FailedLoadTasksCard from '../FailedLoadTasksCard';
 import TasksList from '../TaskList';
+import PageHeading from '@/components/shared/PageHeading';
 
 const TasksPage = () => {
   const isError = false;
   return (
     <div className="container">
       <div className="flex items-center justify-between">
-        <h4 className="text-3xl font-semibold">Tasks</h4>
+        <PageHeading>Tasks</PageHeading>
 
         <div className="flex gap-2">
           <CreateTaskDialog

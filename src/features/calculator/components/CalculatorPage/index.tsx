@@ -1,11 +1,12 @@
 import ConnectionCard from '@/components/ui/ConnectionCard';
 import CalculatorForm from '../CalculatorForm';
+import PageHeading from '@/components/shared/PageHeading';
 
 const CalculatorPage = () => {
   return (
     <>
       <div>
-        <h4 className="text-2xl lg:text-3xl font-semibold mb-6">Calculator</h4>
+        <PageHeading className="mb-6">Calculator</PageHeading>
 
         <ConnectionCard status="success" url="ws://" />
 
