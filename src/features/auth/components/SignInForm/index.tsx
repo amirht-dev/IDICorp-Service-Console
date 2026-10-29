@@ -1,6 +1,6 @@
 import logoIcon_image from '@/assets/images/logo-icon.webp';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import {
   Field,
   FieldError,
@@ -54,10 +54,10 @@ function isIn<T extends object>(key: PropertyKey, object: T): key is keyof T {
 const SignInForm = () => {
   const captchaQuery = useCaptchaQuery();
   const signInMutation = useSignInMutation();
-  const { control, handleSubmit, formState, setError } = useForm({
+  const { control, handleSubmit, formState, setError, setValue } = useForm({
     defaultValues: {
-      username: 'admin',
-      password: 'admin',
+      username: '',
+      password: '',
       captcha_answer: '',
     },
     disabled: captchaQuery.isFetching || signInMutation.isPending,
@@ -126,6 +126,22 @@ const SignInForm = () => {
         </div>
 
         <form onSubmit={handleSignIn}>
+          <Card className="mb-4 bg-warning/10 border-warning text-warning">
+            <CardContent className="text-sm">
+              for sign in as test user use{' '}
+              <button
+                className="underline"
+                type="button"
+                onClick={() => {
+                  setValue('username', 'admin');
+                  setValue('password', 'admin');
+                }}
+              >
+                <b>admin</b>
+              </button>{' '}
+              for both username and password
+            </CardContent>
+          </Card>
           <FieldGroup>
             {errors.root && (
               <Card className="border-error bg-error/10 text-error text-sm">
