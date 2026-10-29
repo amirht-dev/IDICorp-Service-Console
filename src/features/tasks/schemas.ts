@@ -8,3 +8,5 @@ export const createTaskInputSchema = z.object({
   description: z.string().max(2000, 'Title must be up to 2000 characters'),
   completed: z.boolean().default(false),
 });
+
+export const updateTaskInputSchema = createTaskInputSchema.partial();

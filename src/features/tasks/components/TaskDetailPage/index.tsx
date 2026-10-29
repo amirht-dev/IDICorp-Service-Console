@@ -10,7 +10,6 @@ import {
   DetailCardTitle,
 } from '@/components/ui/DetailCard';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { demoTasks } from '@/data/demo';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import {
   ArrowLeftIcon,
@@ -29,7 +28,6 @@ const TaskDetailPage = () => {
   const query = useTaskQuery(taskId);
 
   const navigate = useNavigate();
-  const task = demoTasks[0];
 
   if (query.isError)
     return (
@@ -103,11 +101,13 @@ const TaskDetailPage = () => {
           </div>
         </div>
 
-        <TaskActionsDropdown
-          task={task}
-          showVisitTask={false}
-          disabled={!query.isSuccess}
-        />
+        {query.isSuccess && (
+          <TaskActionsDropdown
+            task={query.data}
+            showVisitTask={false}
+            disabled={!query.isSuccess}
+          />
+        )}
       </div>
 
       <div className="flex flex-col gap-1 lg:gap-2 mt-4 lg:mt-6">

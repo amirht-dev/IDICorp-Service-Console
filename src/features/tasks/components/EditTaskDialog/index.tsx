@@ -19,31 +19,73 @@ import {
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { DevTool } from '@hookform/devtools';
+import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
 import { type ComponentProps, type ReactElement } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import type { Arrayable } from 'type-fest';
+import useTaskQuery from '../../hooks/useTaskQuery';
+import useUpdateTaskMutation from '../../hooks/useUpdateTaskMutation';
+import { updateTaskInputSchema } from '../../schemas';
+import type { TaskModel } from '../../types';
 
 type EditTaskDialogProps = {
+  taskId: string;
   trigger?: Arrayable<ReactElement>;
-  // taskId: string
+  onError?: (error: Error) => void;
+  onSuccess?: (data: TaskModel) => void;
 } & Pick<ComponentProps<typeof Dialog>, 'open' | 'onOpenChange'>;
 
 const EditTaskDialog = ({
+  taskId,
   trigger,
   open,
   onOpenChange,
+  onError,
+  onSuccess,
 }: EditTaskDialogProps) => {
-  const { control, handleSubmit, reset } = useForm({
-    defaultValues: {
-      title: '',
-      description: '',
-      completed: false,
+  const taskQuery = useTaskQuery(taskId);
+  const mutation = useUpdateTaskMutation();
+  const { control, handleSubmit, reset, setError, formState } = useForm({
+    values: {
+      title: taskQuery.isSuccess ? taskQuery.data.title : '',
+      description: taskQuery.isSuccess ? taskQuery.data.description : '',
+      completed: taskQuery.isSuccess ? taskQuery.data.completed : false,
     },
+    disabled: !taskQuery.isSuccess || mutation.isPending,
+    resolver: zodResolver(updateTaskInputSchema),
   });
-  const submitHandler = handleSubmit((data) => {
-    console.log('🚀 ~ EditTaskDialog ~ data:', data);
+
+  const { isSubmitted, isSubmitting, disabled, isValid } = formState;
+
+  const submitHandler = handleSubmit(async (data) => {
+    await mutation.mutateAsync(
+      { id: taskId, input: data },
+      {
+        onError(error) {
+          if (axios.isAxiosError(error)) {
+            if (error.status === 422)
+              console.error('validation error', error.response?.data);
+            if (error.status === 503)
+              setError('root', {
+                message: 'something wrong happened. try again later',
+              });
+          }
+          onError?.(error);
+        },
+        onSuccess(data) {
+          reset();
+          onSuccess?.(data);
+        },
+      },
+    );
     reset();
   });
+
+  const isDisabled = disabled || mutation.isPending;
+
+  const isSubmitDisabled =
+    isDisabled || isSubmitting || (isSubmitted && !isValid);
 
   return (
     <>
@@ -131,12 +173,15 @@ const EditTaskDialog = ({
                     variant="outline"
                     type="button"
                     onClick={() => reset()}
+                    disabled={isDisabled}
                   >
                     Cancel
                   </Button>
                 }
               />
-              <Button type="submit">Edit Task</Button>
+              <Button type="submit" disabled={isSubmitDisabled}>
+                Edit Task
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
