@@ -74,9 +74,11 @@ const CreateTaskDialog = ({ trigger }: CreateTaskDialogProps) => {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        {Array.isArray(trigger)
-          ? trigger.map((t, idx) => <DialogTrigger render={t} key={idx} />)
-          : trigger}
+        {Array.isArray(trigger) ? (
+          trigger.map((t, idx) => <DialogTrigger render={t} key={idx} />)
+        ) : (
+          <DialogTrigger render={trigger} />
+        )}
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Create new Task</DialogTitle>
