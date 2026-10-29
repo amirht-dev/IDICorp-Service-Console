@@ -1,12 +1,16 @@
 import { ACCESS_TOKEN_STORAGE_KEY } from '@/features/auth/constants';
 import axios from 'axios';
-import { env } from './env';
+import { UnauthenticatedError } from './exceptions';
 
-export const baseApi = axios.create({ baseURL: env.VITE_HTTP_API_BASE_URL });
+export const baseApi = axios.create({
+  baseURL: '/api',
+});
 
 export function getAuthApi() {
-  const accessToken = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
-  if (!accessToken) return null;
+  const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
+  if (!storedAccessToken) throw new UnauthenticatedError();
+
+  const accessToken: string = JSON.parse(storedAccessToken);
 
   const authApi = baseApi.create({
     withCredentials: true,

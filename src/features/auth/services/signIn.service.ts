@@ -12,7 +12,11 @@ export async function signIn({
     SignInResponse,
     AxiosResponseDefault,
     SignInInput
-  >('/api/auth/login', { username, password, salt, captcha_answer });
+  >(
+    '/auth/login',
+    { username, password, salt, captcha_answer },
+    { withCredentials: true },
+  );
 
   return response.data;
 }
