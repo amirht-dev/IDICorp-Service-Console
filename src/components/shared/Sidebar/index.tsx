@@ -16,7 +16,7 @@ const navLinks = [
   { label: 'Streaming', to: '/streaming', image: streaming_image },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ onNavigation }: { onNavigation?: () => void }) => {
   const { updateAuth } = useAuth();
 
   return (
@@ -28,6 +28,7 @@ const Sidebar = () => {
           <li key={idx}>
             <NavLink
               to={item.to}
+              onClick={() => onNavigation?.()}
               className={({ isActive }) =>
                 cn(
                   'flex gap-2 items-center text-lg p-2.5 rounded-md transition-all',
