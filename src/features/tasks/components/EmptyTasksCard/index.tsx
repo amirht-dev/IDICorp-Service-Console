@@ -7,27 +7,36 @@ import {
   DetailCardMedia,
   DetailCardTitle,
 } from '@/components/ui/DetailCard';
-import { CheckIcon, PlusIcon } from 'lucide-react';
+import { CheckIcon, PlusIcon, SearchIcon } from 'lucide-react';
 import CreateTaskDialog from '../CreateTaskDialog';
+import type { ReactNode } from 'react';
 
-type EmptyTasksCardProps = { type: 'all' | 'active' | 'completed' };
+type EmptyTasksCardProps = {
+  type: 'all' | 'filter';
+  kind?: 'search' | 'status';
+  value?: ReactNode;
+};
 
-const EmptyTasksCard = ({ type }: EmptyTasksCardProps) => {
+const EmptyTasksCard = ({ type, kind, value }: EmptyTasksCardProps) => {
   return (
     <DetailCard className="border border-dashed">
       <DetailCardHeader>
         <DetailCardMedia variant="icon">
-          <CheckIcon />
+          {type === 'all' && <CheckIcon />}
+          {type === 'filter' && <SearchIcon />}
         </DetailCardMedia>
         <DetailCardTitle>
           {type === 'all' && 'No Tasks Yet'}
-          {type === 'active' && 'No Active Tasks Yet'}
-          {type === 'completed' && 'No Completed Tasks Yet'}
+          {type === 'filter' && 'No Tasks Found'}
         </DetailCardTitle>
         <DetailCardDescription>
-          {type === 'all' && 'Add new tasks to your list'}
-          {type === 'active' && 'All task are completed.'}
-          {type === 'completed' && 'Complete your tasks first'}
+          {type === 'all' && 'Try Add new tasks to your list'}
+          {type === 'filter' && kind === 'search' && (
+            <>
+              no tasks found with term <i>"{value}"</i>
+            </>
+          )}
+          {type === 'filter' && kind === 'status' && `no ${value} tasks found`}
         </DetailCardDescription>
       </DetailCardHeader>
       <DetailCardContent>

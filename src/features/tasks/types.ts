@@ -1,8 +1,15 @@
-export type TaskModel = {
+import type { ArrayValues } from 'type-fest';
+import type { getTasks } from './services/tasks.service';
+
+export type TaskResponseModel = {
   id: string;
   title: string;
   description: string;
   completed: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: string;
+  updated_at: string;
 };
+
+export type TaskModel = ArrayValues<Awaited<ReturnType<typeof getTasks>>>;
+
+export type TaskQueryFilter = { q?: string; completed?: boolean };

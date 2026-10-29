@@ -1,15 +1,10 @@
+import PageHeading from '@/components/shared/PageHeading';
 import { Button } from '@/components/ui/Button';
-import { demoTasks } from '@/data/demo';
-import SearchInput from '@/features/tasks/components/SearchInput';
 import { PlusIcon } from 'lucide-react';
 import CreateTaskDialog from '../CreateTaskDialog';
-import EmptyTasksCard from '../EmptyTasksCard';
-import FailedLoadTasksCard from '../FailedLoadTasksCard';
 import TasksList from '../TaskList';
-import PageHeading from '@/components/shared/PageHeading';
 
 const TasksPage = () => {
-  const isError = false;
   return (
     <div className="container">
       <div className="flex items-center justify-between">
@@ -31,20 +26,7 @@ const TasksPage = () => {
       </div>
 
       <div className="mt-6">
-        {isError ? (
-          <FailedLoadTasksCard />
-        ) : !demoTasks.length ? (
-          <EmptyTasksCard type="all" />
-        ) : (
-          <>
-            <SearchInput
-              className="max-w-md"
-              onDebounceChange={(value) => console.log('search: ', value)}
-            />
-
-            <TasksList tasks={demoTasks} />
-          </>
-        )}
+        <TasksList />
       </div>
     </div>
   );

@@ -11,138 +11,153 @@ import {
 } from '@/components/ui/DropdownMenu';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { ListSortAscendingIcon, ListSortDescendingIcon } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import type { ValueOf } from 'type-fest';
+import { useState } from 'react';
+import { statusTabs, type StatusTabs } from '../../constants';
+import useTasksQuery from '../../hooks/useTasksQuery';
 import EmptyTasksCard from '../EmptyTasksCard';
+import FailedLoadTasksCard from '../FailedLoadTasksCard';
+import SearchInput from '../SearchInput';
 import { TaskCard, TaskCardSkeleton } from '../TaskCard';
 
-const statusTabs = {
-  all: { label: 'All Tasks', value: 'all' },
-  active: { label: 'Active', value: 'active' },
-  completed: { label: 'Completed', value: 'completed' },
-} as const;
-
-type StatusTabs = ValueOf<typeof statusTabs>['value'];
-
-type TaskModel = {
-  id: string;
-  title: string;
-  description: string;
-  completed: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-type TasksListProps = { tasks: TaskModel[]; loading?: boolean };
-
-function TasksList({ tasks, loading }: TasksListProps) {
+function TasksList() {
+  const [searchTerm, setSearchTerm] = useState('');
   const [statusTab, setStatusTab] = useState<StatusTabs>('all');
   const [dateSort, setDateSort] = useState<'created' | 'updated' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'dsc' | null>(null);
+  const query = useTasksQuery(
+    {
+      completed:
+        statusTab === 'active'
+          ? false
+          : statusTab === 'completed'
+            ? true
+            : undefined,
+      q: searchTerm || undefined,
+    },
+    {
+      select(data) {
+        const newData = data.map((task, idx) => ({
+          ...task,
+          created_at: new Date(2010 + idx, 1, 1),
+          updated_at: new Date(2010 + idx, 1, 1),
+        }));
 
-  const isTasksEmpty = !tasks.length;
+        if (dateSort == null) return newData;
 
-  const isDisabled = loading || isTasksEmpty;
+        return newData.toSorted((a, b) => {
+          const targetA = dateSort === 'created' ? a.created_at : a.updated_at;
+          const targetB = dateSort === 'created' ? b.created_at : b.updated_at;
 
-  const filteredTasks = useMemo(() => {
-    if (statusTab === 'all') return tasks;
-    else if (statusTab === 'completed')
-      return tasks.filter((task) => task.completed);
-    else return tasks.filter((task) => !task.completed);
-  }, [statusTab, tasks]);
+          return (
+            Math.sign(targetA.getTime() - targetB.getTime()) *
+            (sortOrder === 'asc' ? 1 : -1)
+          );
+        });
+      },
+    },
+  );
 
-  const sortedTasks = useMemo(() => {
-    let sortedTasks = filteredTasks;
+  const hasSearchTerm = !!searchTerm;
+  const hasStatus = statusTab !== 'all';
 
-    if (dateSort != null) {
-      sortedTasks = sortedTasks.sort((a, b) => {
-        const targetA = dateSort === 'created' ? a.createdAt : a.updatedAt;
-        const targetB = dateSort === 'created' ? b.createdAt : b.updatedAt;
+  const isFiltering = hasSearchTerm || hasStatus;
 
-        return (
-          Math.sign(targetA.getTime() - targetB.getTime()) *
-          (sortOrder === 'asc' ? 1 : -1)
-        );
-      });
-    }
+  const isDisabled = query.isLoading || query.isError;
 
-    return sortedTasks;
-  }, [filteredTasks, dateSort, sortOrder]);
   return (
-    <Tabs
-      defaultValue={statusTab}
-      onValueChange={setStatusTab}
-      className="mt-6"
-    >
-      <div className="flex items-center justify-between">
-        <TabsList aria-disabled={isDisabled}>
-          {Object.values(statusTabs).map((item) => (
-            <TabsTrigger
-              value={item.value}
-              key={item.value}
-              disabled={isDisabled}
-            >
-              {item.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+    <div className="flex flex-col gap-6">
+      <SearchInput
+        className="max-w-md"
+        onDebounceChange={setSearchTerm}
+        disabled={isDisabled}
+      />
+      <Tabs value={statusTab} onValueChange={setStatusTab}>
+        <div className="flex items-center justify-between">
+          <TabsList aria-disabled={isDisabled}>
+            {Object.values(statusTabs).map((item) => (
+              <TabsTrigger
+                value={item.value}
+                key={item.value}
+                disabled={isDisabled}
+              >
+                {item.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        <div className="flex gap-2">
-          <DropdownMenu disabled={isDisabled}>
-            <DropdownMenuTrigger
-              render={<Button variant="outline">Sort</Button>}
-            />
-            <DropdownMenuContent className="min-w-[160px]" align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>By Date</DropdownMenuLabel>
-                <DropdownMenuRadioGroup
-                  value={dateSort}
-                  onValueChange={setDateSort}
-                >
-                  <DropdownMenuRadioItem value="created">
-                    Date Created
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="updated">
-                    Date Updated
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuGroup>
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Sort Order</DropdownMenuLabel>
-                <DropdownMenuRadioGroup
-                  value={sortOrder}
-                  onValueChange={setSortOrder}
-                  disabled={dateSort === null}
-                >
-                  <DropdownMenuRadioItem value="asc">
-                    <ListSortAscendingIcon />
-                    Ascending
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="dsc">
-                    <ListSortDescendingIcon />
-                    Descending
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex gap-2">
+            <DropdownMenu disabled={isDisabled}>
+              <DropdownMenuTrigger
+                render={<Button variant="outline">Sort</Button>}
+              />
+              <DropdownMenuContent className="min-w-[160px]" align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>By Date</DropdownMenuLabel>
+                  <DropdownMenuRadioGroup
+                    value={dateSort}
+                    onValueChange={setDateSort}
+                  >
+                    <DropdownMenuRadioItem value="created">
+                      Date Created
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="updated">
+                      Date Updated
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuGroup>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Sort Order</DropdownMenuLabel>
+                  <DropdownMenuRadioGroup
+                    value={sortOrder}
+                    onValueChange={setSortOrder}
+                    disabled={dateSort === null}
+                  >
+                    <DropdownMenuRadioItem value="asc">
+                      <ListSortAscendingIcon />
+                      Ascending
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="dsc">
+                      <ListSortDescendingIcon />
+                      Descending
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-col gap-1">
-        {loading ? (
-          <Count count={4} render={(idx) => <TaskCardSkeleton key={idx} />} />
-        ) : isTasksEmpty ? (
-          <EmptyTasksCard type="all" />
-        ) : !filteredTasks.length ? (
-          <EmptyTasksCard
-            type={statusTab === 'active' ? 'active' : 'completed'}
-          />
-        ) : (
-          sortedTasks.map((task) => <TaskCard key={task.id} task={task} />)
-        )}
-      </div>
-    </Tabs>
+        <div className="flex flex-col gap-1">
+          {query.isLoading ? (
+            <Count count={4} render={(idx) => <TaskCardSkeleton key={idx} />} />
+          ) : query.isError ? (
+            <FailedLoadTasksCard message={query.error.message} />
+          ) : query.isSuccess ? (
+            query.data.length ? (
+              query.data.map((task) => <TaskCard key={task.id} task={task} />)
+            ) : (
+              <EmptyTasksCard
+                type={isFiltering ? 'filter' : 'all'}
+                kind={
+                  isFiltering
+                    ? hasSearchTerm
+                      ? 'search'
+                      : 'status'
+                    : undefined
+                }
+                value={
+                  isFiltering
+                    ? hasSearchTerm
+                      ? searchTerm
+                      : statusTab
+                    : undefined
+                }
+              />
+            )
+          ) : null}
+        </div>
+      </Tabs>
+    </div>
   );
 }
 
