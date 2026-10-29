@@ -25,16 +25,18 @@ const TaskActionsDropdown = ({
   task,
   className,
   showVisitTask = true,
+  disabled = false,
 }: {
   task: TaskModel;
   className?: string;
   showVisitTask?: boolean;
+  disabled?: boolean;
 }) => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu disabled={disabled}>
         <DropdownMenuTrigger
           render={
             <Button

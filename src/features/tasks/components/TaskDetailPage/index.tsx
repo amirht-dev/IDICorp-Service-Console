@@ -1,14 +1,64 @@
+import Count from '@/components/helpers/Count';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import {
+  DetailCard,
+  DetailCardContent,
+  DetailCardDescription,
+  DetailCardHeader,
+  DetailCardMedia,
+  DetailCardTitle,
+} from '@/components/ui/DetailCard';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { demoTasks } from '@/data/demo';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
-import { ChevronLeftIcon } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import {
+  ArrowLeftIcon,
+  ChevronLeftIcon,
+  RefreshCwIcon,
+  TriangleAlertIcon,
+} from 'lucide-react';
+import { useNavigate, useParams } from 'react-router';
+import useTaskQuery from '../../hooks/useTaskQuery';
 import TaskActionsDropdown from '../TaskActionsDropdown';
 
 const TaskDetailPage = () => {
+  const { taskId } = useParams();
+  if (!taskId) throw new Error('No taskId');
+
+  const query = useTaskQuery(taskId);
+
   const navigate = useNavigate();
   const task = demoTasks[0];
+
+  if (query.isError)
+    return (
+      <DetailCard
+        variant="error"
+        className="rounded-lg border-dashed border-destructive border"
+      >
+        <DetailCardHeader>
+          <DetailCardMedia variant="icon">
+            <TriangleAlertIcon />
+          </DetailCardMedia>
+          <DetailCardTitle>Failed To Load Task</DetailCardTitle>
+          <DetailCardDescription>
+            something wrong happened when loading task. {query.error.message}
+          </DetailCardDescription>
+        </DetailCardHeader>
+        <DetailCardContent>
+          <Button variant="outline" onClick={() => navigate('/tasks')}>
+            <ArrowLeftIcon />
+            Go To Tasks
+          </Button>
+          <Button variant="destructive" onClick={() => query.refetch()}>
+            <RefreshCwIcon />
+            Reload Task
+          </Button>
+        </DetailCardContent>
+      </DetailCard>
+    );
+
   return (
     <div>
       <div className="flex justify-between items-start gap-1">
@@ -33,29 +83,78 @@ const TaskDetailPage = () => {
           </>
 
           <div className="flex flex-col gap-2">
-            <h3 className="text-lg lg:text-3xl font-medium">Task title</h3>
+            <h3 className="text-lg lg:text-3xl font-medium">
+              {query.isLoading ? (
+                <Skeleton className="h-lh w-50" />
+              ) : (
+                query.data?.title
+              )}
+            </h3>
 
             <div className="flex items-start justify-between">
-              <TaskStatusBadge completed={task.completed} />
+              {query.isLoading ? (
+                <Skeleton className="w-20 h-5" />
+              ) : (
+                query.isSuccess && (
+                  <TaskStatusBadge completed={query.data.completed} />
+                )
+              )}
             </div>
           </div>
         </div>
 
-        <TaskActionsDropdown task={task} showVisitTask={false} />
+        <TaskActionsDropdown
+          task={task}
+          showVisitTask={false}
+          disabled={!query.isSuccess}
+        />
       </div>
 
       <div className="flex flex-col gap-1 lg:gap-2 mt-4 lg:mt-6">
         <p className="text-muted-foreground text-sm lg:text-base">
-          Created {formatDistanceToNow(task.createdAt, { addSuffix: true })}
+          {query.isLoading ? (
+            <Skeleton className="h-lh w-60" />
+          ) : (
+            query.isSuccess && (
+              <>
+                Created{' '}
+                {formatDistanceToNow(query.data.created_at, {
+                  addSuffix: true,
+                })}
+              </>
+            )
+          )}
         </p>
         <p className="text-muted-foreground text-sm lg:text-base">
-          Updated {formatDistanceToNow(task.updatedAt, { addSuffix: true })}
+          {query.isLoading ? (
+            <Skeleton className="h-lh w-60" />
+          ) : (
+            query.isSuccess && (
+              <>
+                Updated{' '}
+                {formatDistanceToNow(query.data.updated_at, {
+                  addSuffix: true,
+                })}
+              </>
+            )
+          )}
         </p>
       </div>
 
       <div className="mt-14">
         <h4 className="font-semibold">Description:</h4>
-        <p className="text-muted-foreground">{task.description}</p>
+        {query.isLoading ? (
+          <Count
+            count={3}
+            render={(idx) => (
+              <Skeleton key={idx} className="h-lh w-full mb-2" />
+            )}
+          />
+        ) : (
+          query.isSuccess && (
+            <p className="text-muted-foreground">{task.description}</p>
+          )
+        )}
       </div>
     </div>
   );
