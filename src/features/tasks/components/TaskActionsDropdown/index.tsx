@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import useUpdateTaskMutation from '../../hooks/useUpdateTaskMutation';
 import type { TaskModel } from '../../types';
 import DeleteTaskDialog from '../DeleteTaskDialog';
 import EditTaskDialog from '../EditTaskDialog';
@@ -59,7 +60,11 @@ const TaskActionsDropdown = ({
             <SquarePenIcon />
             Edit
           </DropdownMenuItem>
-          {task.completed ? (
+          <SwitchStatusDropdownItem
+            task={task}
+            onSuccess={() => setEditDialogOpen(false)}
+          />
+          {/* {task.completed ? (
             <DropdownMenuItem>
               <CircleDotIcon />
               Set as active
@@ -69,7 +74,7 @@ const TaskActionsDropdown = ({
               <CircleCheckIcon />
               Set as completed
             </DropdownMenuItem>
-          )}
+          )} */}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
@@ -94,5 +99,42 @@ const TaskActionsDropdown = ({
     </>
   );
 };
+
+function SwitchStatusDropdownItem({
+  task,
+  onSuccess,
+}: {
+  task: TaskModel;
+  onSuccess?: () => void;
+}) {
+  const mutation = useUpdateTaskMutation();
+
+  const switchStatus = async () => {
+    mutation.mutate(
+      { id: task.id, input: { completed: !task.completed } },
+      {
+        onSuccess() {
+          onSuccess?.();
+        },
+      },
+    );
+  };
+
+  return (
+    <DropdownMenuItem disabled={mutation.isPending} onClick={switchStatus}>
+      {task.completed ? (
+        <>
+          <CircleDotIcon />
+          Set as active
+        </>
+      ) : (
+        <>
+          <CircleCheckIcon />
+          Set as completed
+        </>
+      )}
+    </DropdownMenuItem>
+  );
+}
 
 export default TaskActionsDropdown;
