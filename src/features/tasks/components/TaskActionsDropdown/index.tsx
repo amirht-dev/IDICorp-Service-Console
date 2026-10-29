@@ -93,6 +93,8 @@ const TaskActionsDropdown = ({
         onSuccess={() => setEditDialogOpen(false)}
       />
       <DeleteTaskDialog
+        taskId={task.id}
+        onSuccess={() => setDeleteDialogOpen(false)}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
       />

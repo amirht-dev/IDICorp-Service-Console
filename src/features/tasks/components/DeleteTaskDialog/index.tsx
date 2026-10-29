@@ -13,17 +13,32 @@ import {
 import { Trash2Icon } from 'lucide-react';
 import type { ComponentProps, ReactElement } from 'react';
 import type { Arrayable } from 'type-fest';
+import useDeleteTaskMutation from '../../hooks/useDeleteTaskMutation';
+import type { TaskModel } from '../../types';
 
 type DeleteTaskDialogProps = {
-  // taskId: string
+  taskId: TaskModel['id'];
   trigger?: Arrayable<ReactElement>;
+  onSuccess?: () => void;
 } & Pick<ComponentProps<typeof AlertDialog>, 'open' | 'onOpenChange'>;
 
 const DeleteTaskDialog = ({
+  taskId,
   trigger,
   open,
   onOpenChange,
+  onSuccess,
 }: DeleteTaskDialogProps) => {
+  const mutation = useDeleteTaskMutation();
+
+  const handleDeleteTask = async () => {
+    mutation.mutate(taskId, {
+      onSuccess() {
+        onSuccess?.();
+      },
+    });
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       {Array.isArray(trigger)
@@ -41,8 +56,14 @@ const DeleteTaskDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
-          <AlertDialogAction variant="destructive">
+          <AlertDialogCancel variant="outline" disabled={mutation.isPending}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            disabled={mutation.isPending}
+            onClick={handleDeleteTask}
+          >
             Delete Task
           </AlertDialogAction>
         </AlertDialogFooter>

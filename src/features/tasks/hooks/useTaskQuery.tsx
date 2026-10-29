@@ -23,7 +23,9 @@ export const getTaskQueryOptions = (
     queryKey: ['tasks', String(id)],
     queryFn: () => getTask(id),
     retry(failureCount, error) {
-      if (axios.isAxiosError(error) && error.status === 401) return false;
+      if (axios.isAxiosError(error)) {
+        if (error.status === 401 || error.status === 404) return false;
+      }
       if (failureCount > 10) return false;
 
       return true;

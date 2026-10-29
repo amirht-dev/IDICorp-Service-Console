@@ -36,15 +36,9 @@ function TasksList() {
     },
     {
       select(data) {
-        const newData = data.map((task, idx) => ({
-          ...task,
-          created_at: new Date(2010 + idx, 1, 1),
-          updated_at: new Date(2010 + idx, 1, 1),
-        }));
+        if (dateSort == null) return data;
 
-        if (dateSort == null) return newData;
-
-        return newData.toSorted((a, b) => {
+        return data.toSorted((a, b) => {
           const targetA = dateSort === 'created' ? a.created_at : a.updated_at;
           const targetB = dateSort === 'created' ? b.created_at : b.updated_at;
 

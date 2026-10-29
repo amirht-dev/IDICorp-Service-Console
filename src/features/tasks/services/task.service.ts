@@ -43,3 +43,7 @@ export async function updateTask(id: string, input: UpdateTaskInput) {
     updated_at: new Date(task.updated_at),
   };
 }
+
+export async function deleteTask(id: string) {
+  await getAuthApi().delete(`/tasks/${id}`);
+}
