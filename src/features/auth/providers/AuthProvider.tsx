@@ -21,10 +21,9 @@ export const { context: AuthContext, hook: useAuth } = createCTX<{
 type AuthStatus = 'authenticating' | 'unauthenticated' | 'authenticated';
 
 const AuthProvider = ({ children }: PropsWithChildren) => {
-  const [accessToken, setAccessToken] = useLocalStorage<string | null>(
-    ACCESS_TOKEN_STORAGE_KEY,
-    null,
-  );
+  const [accessToken, setAccessToken, removeAccessToken] = useLocalStorage<
+    string | null
+  >(ACCESS_TOKEN_STORAGE_KEY, null);
   const [status, setStatus] = useState<AuthStatus>(() =>
     accessToken ? 'authenticated' : 'unauthenticated',
   );
@@ -36,8 +35,9 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
   ) => {
     if (args.status === 'authenticated') {
       setAccessToken(args.accessToken);
+    } else {
+      removeAccessToken();
     }
-
     setStatus(args.status);
   };
 

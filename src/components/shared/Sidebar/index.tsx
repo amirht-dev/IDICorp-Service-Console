@@ -4,6 +4,7 @@ import logo_image from '@/assets/images/logo_text_row_dark.webp';
 import streaming_image from '@/assets/images/streaming.webp';
 import tasks_image from '@/assets/images/tasks.webp';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/features/auth/providers/AuthProvider';
 import { cn } from 'cn';
 import { LogOutIcon } from 'lucide-react';
 import { NavLink } from 'react-router';
@@ -16,6 +17,8 @@ const navLinks = [
 ];
 
 const Sidebar = () => {
+  const { updateAuth } = useAuth();
+
   return (
     <div className="h-dvh bg-sidebar text-sidebar-foreground px-4 py-8 flex flex-col">
       <img src={logo_image} alt="" className="w-50" />
@@ -39,7 +42,12 @@ const Sidebar = () => {
         ))}
       </ul>
 
-      <Button variant="secondary" size="xl" className="mt-auto">
+      <Button
+        variant="secondary"
+        size="xl"
+        className="mt-auto"
+        onClick={() => updateAuth({ status: 'unauthenticated' })}
+      >
         Sign out
         <LogOutIcon />
       </Button>
