@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import './App.css';
+import Protect from './features/auth/components/Protect';
 
 const DashboardLayout = lazy(
   () => import('@/components/layouts/DashboardLayout'),
@@ -22,13 +23,15 @@ function App() {
   return (
     <Routes>
       <Route path="sign-in" element={<SignInPage />} />
-      <Route index element={<Navigate to="/tasks" />} />
-      <Route element={<DashboardLayout />}>
-        <Route path="tasks" element={<TasksPage />} />
-        <Route path="tasks/:taskId" element={<TaskDetailPage />} />
-        <Route path="calculator" element={<CalculatorPage />} />
-        <Route path="echo" element={<EchoPage />} />
-        <Route path="streaming" element={<StreamingPage />} />
+      <Route element={<Protect />}>
+        <Route index element={<Navigate to="/tasks" />} />
+        <Route element={<DashboardLayout />}>
+          <Route path="tasks" element={<TasksPage />} />
+          <Route path="tasks/:taskId" element={<TaskDetailPage />} />
+          <Route path="calculator" element={<CalculatorPage />} />
+          <Route path="echo" element={<EchoPage />} />
+          <Route path="streaming" element={<StreamingPage />} />
+        </Route>
       </Route>
     </Routes>
   );
