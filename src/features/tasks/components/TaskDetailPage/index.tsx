@@ -1,6 +1,7 @@
 import Count from '@/components/helpers/Count';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Card, CardTitle } from '@/components/ui/Card';
 import {
   DetailCard,
   DetailCardContent,
@@ -10,6 +11,7 @@ import {
   DetailCardTitle,
 } from '@/components/ui/DetailCard';
 import { Skeleton } from '@/components/ui/Skeleton';
+import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import {
   ArrowLeftIcon,
@@ -28,6 +30,24 @@ const TaskDetailPage = () => {
   const query = useTaskQuery(taskId);
 
   const navigate = useNavigate();
+
+  if (
+    query.isError &&
+    axios.isAxiosError(query.error) &&
+    query.error.status === 404
+  )
+    return (
+      <Card className="min-h-100 flex items-center justify-center">
+        <div className="flex items-center gap-4 divide-x">
+          <span className="text-3xl lg:text-4xl pe-4">404</span>
+          <CardTitle>Task you want to see is not exists</CardTitle>
+        </div>
+        <Button variant="outline" onClick={() => navigate('/tasks')}>
+          <ArrowLeftIcon />
+          Go To Tasks
+        </Button>
+      </Card>
+    );
 
   if (query.isError)
     return (
