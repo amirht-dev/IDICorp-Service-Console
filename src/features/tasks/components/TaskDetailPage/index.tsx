@@ -111,7 +111,7 @@ const TaskDetailPage = () => {
       </div>
 
       <div className="flex flex-col gap-1 lg:gap-2 mt-4 lg:mt-6">
-        <p className="text-muted-foreground text-sm lg:text-base">
+        <div className="text-muted-foreground text-sm lg:text-base">
           {query.isLoading ? (
             <Skeleton className="h-lh w-60" />
           ) : (
@@ -124,8 +124,8 @@ const TaskDetailPage = () => {
               </>
             )
           )}
-        </p>
-        <p className="text-muted-foreground text-sm lg:text-base">
+        </div>
+        <div className="text-muted-foreground text-sm lg:text-base">
           {query.isLoading ? (
             <Skeleton className="h-lh w-60" />
           ) : (
@@ -138,7 +138,7 @@ const TaskDetailPage = () => {
               </>
             )
           )}
-        </p>
+        </div>
       </div>
 
       <div className="mt-14">
@@ -152,7 +152,7 @@ const TaskDetailPage = () => {
           />
         ) : (
           query.isSuccess && (
-            <p className="text-muted-foreground">{task.description}</p>
+            <p className="text-muted-foreground">{query.data.description}</p>
           )
         )}
       </div>

@@ -1,4 +1,6 @@
 import type { ArrayValues } from 'type-fest';
+import type { z } from 'zod/v4';
+import type { createTaskInputSchema } from './schemas';
 import type { getTasks } from './services/tasks.service';
 
 export type TaskResponseModel = {
@@ -13,3 +15,5 @@ export type TaskResponseModel = {
 export type TaskModel = ArrayValues<Awaited<ReturnType<typeof getTasks>>>;
 
 export type TaskQueryFilter = { q?: string; completed?: boolean };
+
+export type CreateTaskInput = z.infer<typeof createTaskInputSchema>;
