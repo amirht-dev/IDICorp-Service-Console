@@ -95,8 +95,7 @@ const SignInForm = () => {
             }
             console.error(error);
           },
-          onSuccess(data) {
-            console.log(data);
+          onSuccess() {
             navigate('/tasks');
           },
         },
