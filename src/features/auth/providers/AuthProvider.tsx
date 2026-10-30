@@ -57,7 +57,6 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
     const listener = (
       e: CustomEvent<{ key: string; value: string | null }>,
     ) => {
-      console.log('event', e);
       if (
         e.detail.key === ACCESS_TOKEN_STORAGE_KEY &&
         e.detail.value === null
