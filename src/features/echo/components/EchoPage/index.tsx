@@ -4,14 +4,13 @@ import { Card, CardContent } from '@/components/ui/Card';
 import ConnectionCard from '@/components/ui/ConnectionCard';
 import { DEMO_MESSAGES_HISTORY } from '@/data/demo';
 import { env } from '@/lib/env';
-import { ReadyState } from 'react-use-websocket/src/lib/constants';
 import useEchoWS from '../../hooks/useEchoWS';
 import EchoMessageForm from '../EchoMessageForm';
 import EchoMessagesList from '../EchoMessagesList';
+import { ReadyState } from 'react-use-websocket';
 
 const EchoPage = () => {
-  const { isReady, readyState, send, messagesHistory, clear, error } =
-    useEchoWS();
+  const { isReady, readyState, send, error } = useEchoWS();
 
   return (
     <div>

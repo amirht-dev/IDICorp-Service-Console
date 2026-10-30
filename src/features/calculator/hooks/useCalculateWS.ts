@@ -1,9 +1,9 @@
 import { useAuth } from '@/features/auth/providers/AuthProvider';
 import { env } from '@/lib/env';
 import { useCallback, useEffect, useState } from 'react';
-import { ReadyState } from 'react-use-websocket/src/lib/constants';
-import { useWebSocket } from 'react-use-websocket/src/lib/use-websocket';
 import { calculatorMessageSchema, type CalculatorInput } from '../schemas';
+import { useWebSocket } from '@/lib/react-use-websocket';
+import { ReadyState } from 'react-use-websocket';
 
 function useCalculateWS() {
   const [error, setError] = useState<string | null>(null);

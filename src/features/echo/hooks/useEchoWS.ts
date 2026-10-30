@@ -1,8 +1,8 @@
 import { useAuth } from '@/features/auth/providers/AuthProvider';
 import { env } from '@/lib/env';
+import { useWebSocket } from '@/lib/react-use-websocket';
 import { useCallback, useEffect, useState } from 'react';
-import { ReadyState } from 'react-use-websocket/src/lib/constants';
-import { useWebSocket } from 'react-use-websocket/src/lib/use-websocket';
+import { ReadyState } from 'react-use-websocket';
 import { echoMessageSchema, type EchoMessageInput } from '../schemas';
 import type { MessageType } from '../types';
 

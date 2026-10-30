@@ -1,5 +1,5 @@
 import { cn } from 'cn';
-import { ReadyState } from 'react-use-websocket/src/lib/constants';
+import { ReadyState } from 'react-use-websocket';
 import { Separator } from '../Separator';
 
 type ConnectionCardProps = {
