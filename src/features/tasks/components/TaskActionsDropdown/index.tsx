@@ -64,17 +64,6 @@ const TaskActionsDropdown = ({
             task={task}
             onSuccess={() => setEditDialogOpen(false)}
           />
-          {/* {task.completed ? (
-            <DropdownMenuItem>
-              <CircleDotIcon />
-              Set as active
-            </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem>
-              <CircleCheckIcon />
-              Set as completed
-            </DropdownMenuItem>
-          )} */}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
@@ -89,7 +78,7 @@ const TaskActionsDropdown = ({
       <EditTaskDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
-        taskId={task.id}
+        task={task}
         onSuccess={() => setEditDialogOpen(false)}
       />
       <DeleteTaskDialog

@@ -24,35 +24,33 @@ import axios from 'axios';
 import { type ComponentProps, type ReactElement } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import type { Arrayable } from 'type-fest';
-import useTaskQuery from '../../hooks/useTaskQuery';
 import useUpdateTaskMutation from '../../hooks/useUpdateTaskMutation';
 import { updateTaskInputSchema } from '../../schemas';
 import type { TaskModel } from '../../types';
 
 type EditTaskDialogProps = {
-  taskId: string;
+  task: TaskModel;
   trigger?: Arrayable<ReactElement>;
   onError?: (error: Error) => void;
   onSuccess?: (data: TaskModel) => void;
 } & Pick<ComponentProps<typeof Dialog>, 'open' | 'onOpenChange'>;
 
 const EditTaskDialog = ({
-  taskId,
+  task,
   trigger,
   open,
   onOpenChange,
   onError,
   onSuccess,
 }: EditTaskDialogProps) => {
-  const taskQuery = useTaskQuery(taskId);
   const mutation = useUpdateTaskMutation();
   const { control, handleSubmit, reset, setError, formState } = useForm({
     values: {
-      title: taskQuery.isSuccess ? taskQuery.data.title : '',
-      description: taskQuery.isSuccess ? taskQuery.data.description : '',
-      completed: taskQuery.isSuccess ? taskQuery.data.completed : false,
+      title: task.title,
+      description: task.description,
+      completed: task.completed,
     },
-    disabled: !taskQuery.isSuccess || mutation.isPending,
+    disabled: mutation.isPending,
     resolver: zodResolver(updateTaskInputSchema),
   });
 
@@ -60,7 +58,7 @@ const EditTaskDialog = ({
 
   const submitHandler = handleSubmit(async (data) => {
     await mutation.mutateAsync(
-      { id: taskId, input: data },
+      { id: task.id, input: data },
       {
         onError(error) {
           if (axios.isAxiosError(error)) {
