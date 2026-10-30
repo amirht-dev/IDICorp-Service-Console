@@ -177,8 +177,12 @@ const EditTaskDialog = ({
                   </Button>
                 }
               />
-              <Button type="submit" disabled={isSubmitDisabled}>
-                Edit Task
+              <Button
+                type="submit"
+                disabled={isSubmitDisabled}
+                loading={isSubmitting}
+              >
+                {isSubmitting ? 'Editing Task' : 'Edit Task'}
               </Button>
             </DialogFooter>
           </form>

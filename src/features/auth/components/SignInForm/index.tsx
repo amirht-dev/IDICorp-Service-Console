@@ -251,16 +251,10 @@ const SignInForm = () => {
             type="submit"
             className="mt-6 w-full"
             disabled={isDisabled}
+            loading={isSubmitting}
+            endIcon={<ArrowRightIcon />}
           >
-            {isSubmitting ? (
-              <>
-                Signing In <Spinner />
-              </>
-            ) : (
-              <>
-                Sign In <ArrowRightIcon />
-              </>
-            )}
+            {isSubmitting ? 'Signing In' : 'Sign In'}
           </Button>
         </form>
       </div>
