@@ -43,34 +43,49 @@ const MultipleInput = <T,>({
 
   const addValue = useCallback(
     (newValue: T) => {
-      if (resolvedValue.length >= max) return;
+      if (value === undefined) {
+        setLocalValue((p) => {
+          if (p.length >= max) return p;
 
-      setLocalValue((p) => {
-        const newVal = [...p, newValue];
-        onValueChange?.(newVal);
-        return newVal;
-      });
+          const newVal = [...p, newValue];
+          onValueChange?.(newVal);
+          return newVal;
+        });
+      } else {
+        if (value.length >= max) return;
+        onValueChange?.([...value, newValue]);
+      }
     },
-    [max, onValueChange, resolvedValue],
+    [max, onValueChange, value],
   );
 
   const removeValue = useCallback(
     (idx: number) => {
-      setLocalValue((p) => {
-        const newValue = [...p];
+      if (value === undefined) {
+        setLocalValue((p) => {
+          const newValue = [...p];
+          newValue.splice(idx, 1);
+          onValueChange?.(newValue);
+          return newValue;
+        });
+      } else {
+        const newValue = [...value];
         newValue.splice(idx, 1);
         onValueChange?.(newValue);
-        return newValue;
-      });
+      }
     },
-    [onValueChange],
+    [onValueChange, value],
   );
 
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.isDefaultPrevented()) return;
     if (e.key !== 'Delete') return;
 
-    removeValue(resolvedValue.length - 1);
+    if (value === undefined) {
+      removeValue(localValue.length - 1);
+    } else {
+      removeValue(value.length - 1);
+    }
   };
 
   return (

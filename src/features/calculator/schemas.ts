@@ -11,18 +11,15 @@ export type CalculatorOperator = z.infer<typeof calculatorOperatorSchema>;
 
 export const calculatorFormInputSchema = z
   .object({
-    operator: z
-      .string()
-      .nonempty('Operator is required')
-      .pipe(calculatorOperatorSchema),
+    operation: calculatorOperatorSchema,
     numbers: z
       .array(z.number())
       .nonempty('Numbers are required')
       .min(2, 'at least two numbers are required')
       .max(100, 'Only 100 numbers are allowed'),
   })
-  .superRefine(({ operator, numbers }, ctx) => {
-    if (operator === 'divide' && numbers.slice(1).some((num) => num === 0)) {
+  .superRefine(({ operation, numbers }, ctx) => {
+    if (operation === 'divide' && numbers.slice(1).some((num) => num === 0)) {
       ctx.addIssue({
         code: 'invalid_value',
         path: ['numbers'],
@@ -33,3 +30,17 @@ export const calculatorFormInputSchema = z
       return z.NEVER;
     }
   });
+
+export type CalculatorInput = z.infer<typeof calculatorFormInputSchema>;
+
+export const calculatorMessageSchema = z.union([
+  z.object({
+    type: z.string(),
+  }),
+  z.object({
+    error: z.string(),
+  }),
+  z.object({
+    result: z.number(),
+  }),
+]);

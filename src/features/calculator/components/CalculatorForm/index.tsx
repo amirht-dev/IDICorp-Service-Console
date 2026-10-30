@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -15,16 +16,18 @@ import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cn } from 'cn';
 import {
+  BrushCleaningIcon,
   Calculator,
   DivideIcon,
   MinusIcon,
   PlusIcon,
   XIcon,
 } from 'lucide-react';
-import { useState, type ReactElement } from 'react';
+import { type ReactElement } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   calculatorFormInputSchema,
+  type CalculatorInput,
   type CalculatorOperator,
 } from '../../schemas';
 
@@ -54,25 +57,43 @@ const operators = {
   { value: string; label: string; icon: ReactElement }
 >;
 
-type CalculatorFormProps = { className?: string };
+type CalculatorFormProps = {
+  className?: string;
+  disabled?: boolean;
+  result: number | null;
+  onCalculate: (data: CalculatorInput) => void;
+  onClear?: () => void;
+};
 
-const CalculatorForm = ({ className }: CalculatorFormProps) => {
-  const [result] = useState<string | null>(null);
-  const { control, handleSubmit, formState } = useForm({
+const CalculatorForm = ({
+  disabled = false,
+  onCalculate,
+  result,
+  onClear,
+  className,
+}: CalculatorFormProps) => {
+  const { control, handleSubmit, formState, reset } = useForm({
     defaultValues: {
-      operator: '',
+      operation: 'add',
       numbers: [],
     },
+    disabled,
     resolver: zodResolver(calculatorFormInputSchema),
   });
 
-  const { isSubmitting, isSubmitted, isValid } = formState;
+  const {
+    isSubmitting,
+    isSubmitted,
+    isValid,
+    disabled: formDisabled,
+  } = formState;
 
   const submitHandler = handleSubmit((data) => {
-    console.log('🚀 ~ CalculatorPage ~ data:', data);
+    onCalculate(data);
   });
 
-  const isSubmitDisabled = isSubmitting || (isSubmitted && !isValid);
+  const isSubmitDisabled =
+    formDisabled || isSubmitting || (isSubmitted && !isValid);
 
   return (
     <>
@@ -86,13 +107,13 @@ const CalculatorForm = ({ className }: CalculatorFormProps) => {
         <FieldGroup className="flex-1">
           <Controller
             control={control}
-            name="operator"
+            name="operation"
             render={({ field, fieldState }) => {
               const { value, onChange, ref, disabled } = field;
               return (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel id="operator-label" required>
-                    Operator
+                    Operation
                   </FieldLabel>
                   <ToggleGroup
                     aria-labelledby="operator-label"
@@ -148,8 +169,12 @@ const CalculatorForm = ({ className }: CalculatorFormProps) => {
                       }}
                     />
                   </MultipleInput>
-                  {fieldState.error && (
+                  {fieldState.error ? (
                     <FieldError>{fieldState.error.message}</FieldError>
+                  ) : (
+                    <FieldDescription>
+                      to add multiple numbers, type number and press enter
+                    </FieldDescription>
                   )}
                 </Field>
               );
@@ -157,16 +182,25 @@ const CalculatorForm = ({ className }: CalculatorFormProps) => {
           />
         </FieldGroup>
 
-        <Button
-          size="xl"
-          className="shrink-0 self-center"
-          type="submit"
-          disabled={isSubmitDisabled}
-        >
-          Calculate
-          {isSubmitting && <Spinner />}
-          <Calculator />
-        </Button>
+        <div className="flex max-md:flex-col shrink-0 self-center gap-2">
+          <Button size="xl" type="submit" disabled={isSubmitDisabled}>
+            {isSubmitting ? <Spinner /> : <Calculator />}
+            Calculate
+          </Button>
+          <Button
+            size="xl"
+            type="button"
+            variant="outline"
+            disabled={isSubmitDisabled}
+            onClick={() => {
+              reset();
+              onClear?.();
+            }}
+          >
+            <BrushCleaningIcon />
+            Clear
+          </Button>
+        </div>
 
         <div className="flex-1 bg-secondary flex items-center justify-center min-h-40 rounded-lg">
           {result == null ? (

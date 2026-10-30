@@ -1,31 +1,46 @@
 import { cn } from 'cn';
+import { ReadyState } from 'react-use-websocket/src/lib/constants';
 import { Separator } from '../Separator';
 
 type ConnectionCardProps = {
   className?: string;
-  status: 'pending' | 'success' | 'failed';
+  readyState: ReadyState;
   url: string;
 };
 
-const s = {
-  pending: {
+const readyStateMap = {
+  [ReadyState.UNINSTANTIATED]: {
+    dotClass: 'bg-warning',
+    textClass: 'text-warning',
+    text: 'Un instantiated',
+  },
+  [ReadyState.CONNECTING]: {
     dotClass: 'bg-warning',
     textClass: 'text-warning',
     text: 'Connecting',
   },
-  failed: { dotClass: 'bg-error', textClass: 'text-error', text: 'Failed' },
-  success: {
+  [ReadyState.OPEN]: {
     dotClass: 'bg-success',
     textClass: 'text-success',
     text: 'Connected',
   },
+  [ReadyState.CLOSING]: {
+    dotClass: 'bg-warning',
+    textClass: 'text-warning',
+    text: 'Disconnecting',
+  },
+  [ReadyState.CLOSED]: {
+    dotClass: 'bg-error',
+    textClass: 'text-error',
+    text: 'Disconnected',
+  },
 } satisfies Record<
-  ConnectionCardProps['status'],
+  ReadyState,
   { dotClass: string; textClass: string; text: string }
 >;
 
-function ConnectionCard({ url, status, className }: ConnectionCardProps) {
-  const { dotClass, textClass, text } = s[status];
+function ConnectionCard({ url, readyState, className }: ConnectionCardProps) {
+  const { dotClass, textClass, text } = readyStateMap[readyState];
   return (
     <div className={cn('p-4 border rounded-md', className)}>
       <h5 className="text-lg font-medium">Connection</h5>

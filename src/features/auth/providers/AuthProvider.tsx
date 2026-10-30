@@ -1,8 +1,8 @@
 import { createCTX } from '@/helpers';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState, type PropsWithChildren } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { ACCESS_TOKEN_STORAGE_KEY } from '../constants';
-import { useQueryClient } from '@tanstack/react-query';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const { context: AuthContext, hook: useAuth } = createCTX<{
@@ -17,6 +17,7 @@ export const { context: AuthContext, hook: useAuth } = createCTX<{
         },
   ) => void;
   status: AuthStatus;
+  accessToken: string | null;
 }>('AuthProvider');
 
 type AuthStatus = 'authenticating' | 'unauthenticated' | 'authenticated';
@@ -44,7 +45,11 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
     setStatus(args.status);
   };
 
-  return <AuthContext value={{ updateAuth, status }}>{children}</AuthContext>;
+  return (
+    <AuthContext value={{ updateAuth, status, accessToken }}>
+      {children}
+    </AuthContext>
+  );
 };
 
 export default AuthProvider;
