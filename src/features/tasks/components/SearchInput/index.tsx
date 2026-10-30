@@ -6,7 +6,8 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from '../../../../components/ui/InputGroup';
+} from '@/components/ui/InputGroup';
+import { Kbd } from '@/components/ui/Kbd';
 
 type SearchInputProps = Merge<
   ComponentProps<typeof InputGroupInput>,
@@ -46,6 +47,9 @@ const SearchInput = ({
       />
       <InputGroupAddon align="inline-start">
         <SearchIcon />
+      </InputGroupAddon>
+      <InputGroupAddon align="inline-end">
+        <Kbd>⌘K</Kbd>
       </InputGroupAddon>
     </InputGroup>
   );

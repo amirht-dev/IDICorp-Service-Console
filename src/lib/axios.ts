@@ -19,5 +19,20 @@ export function getAuthApi() {
     },
   });
 
+  authApi.interceptors.response.use(null, (error) => {
+    if (axios.isAxiosError(error) && error.status === 401) {
+      localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+      dispatchEvent(
+        new CustomEvent('localstorage:change', {
+          detail: {
+            key: ACCESS_TOKEN_STORAGE_KEY,
+            value: null,
+          },
+        }),
+      );
+    }
+    throw error;
+  });
+
   return authApi;
 }

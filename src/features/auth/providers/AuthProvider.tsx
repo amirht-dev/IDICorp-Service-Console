@@ -1,6 +1,11 @@
 import { createCTX } from '@/helpers';
 import { useQueryClient } from '@tanstack/react-query';
-import { useState, type PropsWithChildren } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type PropsWithChildren,
+} from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { ACCESS_TOKEN_STORAGE_KEY } from '../constants';
 
@@ -31,19 +36,45 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
   );
   const queryClient = useQueryClient();
 
-  const updateAuth = (
-    args:
-      | { status: 'authenticated'; accessToken: string }
-      | { status: 'unauthenticated' | 'authenticating' },
-  ) => {
-    if (args.status === 'authenticated') {
-      setAccessToken(args.accessToken);
-    } else {
-      removeAccessToken();
-      queryClient.clear();
-    }
-    setStatus(args.status);
-  };
+  const updateAuth = useCallback(
+    (
+      args:
+        | { status: 'authenticated'; accessToken: string }
+        | { status: 'unauthenticated' | 'authenticating' },
+    ) => {
+      if (args.status === 'authenticated') {
+        setAccessToken(args.accessToken);
+      } else {
+        removeAccessToken();
+        queryClient.clear();
+      }
+      setStatus(args.status);
+    },
+    [queryClient, setAccessToken, removeAccessToken],
+  );
+
+  useEffect(() => {
+    const listener = (
+      e: CustomEvent<{ key: string; value: string | null }>,
+    ) => {
+      console.log('event', e);
+      if (
+        e.detail.key === ACCESS_TOKEN_STORAGE_KEY &&
+        e.detail.value === null
+      ) {
+        updateAuth({ status: 'unauthenticated' });
+      }
+    };
+
+    window.addEventListener('localstorage:change', listener as EventListener);
+
+    return () => {
+      window.removeEventListener(
+        'localstorage:change',
+        listener as EventListener,
+      );
+    };
+  }, [updateAuth]);
 
   return (
     <AuthContext value={{ updateAuth, status, accessToken }}>
