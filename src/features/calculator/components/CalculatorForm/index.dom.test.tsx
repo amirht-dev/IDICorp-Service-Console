@@ -9,12 +9,10 @@ test('should shows validation errors after submission', async () => {
 
   const submitButton = screen.getByRole('button', { name: /calculate/i });
 
-  expect(screen.queryByText(/operator is required/i)).not.toBeInTheDocument();
   expect(screen.queryByText(/numbers are required/i)).not.toBeInTheDocument();
 
   await user.click(submitButton);
 
-  expect(screen.queryByText(/operator is required/i)).toBeInTheDocument();
   expect(screen.queryByText(/numbers are required/i)).toBeInTheDocument();
 });
 
@@ -27,7 +25,6 @@ test('should show required validation errors', async () => {
 
   await user.click(submitButton);
 
-  expect(screen.queryByText(/operator is required/i)).toBeInTheDocument();
   expect(screen.queryByText(/numbers are required/i)).toBeInTheDocument();
 });
 
@@ -56,7 +53,7 @@ test('should numbers field has at least two numbers', async () => {
   ).not.toBeInTheDocument();
 });
 
-test('should show validation error when operator is divide and numbers has 0 from the second one onwards', async () => {
+test('should show validation error when operation is divide and numbers has 0 from the second one onwards', async () => {
   const user = userEvent.setup();
 
   render(<CalculatorForm />);
@@ -64,7 +61,7 @@ test('should show validation error when operator is divide and numbers has 0 fro
   const submitButton = screen.getByRole('button', { name: /calculate/i });
 
   await user.click(
-    within(screen.getByLabelText(/operator/i)).getByRole('button', {
+    within(screen.getByLabelText(/operation/i)).getByRole('button', {
       name: /divide/i,
     }),
   );

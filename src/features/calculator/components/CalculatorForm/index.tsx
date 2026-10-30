@@ -60,15 +60,15 @@ const operators = {
 type CalculatorFormProps = {
   className?: string;
   disabled?: boolean;
-  result: number | null;
-  onCalculate: (data: CalculatorInput) => void;
+  result?: number | null;
+  onCalculate?: (data: CalculatorInput) => void;
   onClear?: () => void;
 };
 
 const CalculatorForm = ({
   disabled = false,
   onCalculate,
-  result,
+  result = null,
   onClear,
   className,
 }: CalculatorFormProps) => {
@@ -89,7 +89,7 @@ const CalculatorForm = ({
   } = formState;
 
   const submitHandler = handleSubmit((data) => {
-    onCalculate(data);
+    onCalculate?.(data);
   });
 
   const isSubmitDisabled =
