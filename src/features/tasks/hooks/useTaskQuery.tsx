@@ -20,7 +20,7 @@ export const getTaskQueryOptions = (
 ) =>
   queryOptions({
     ...options,
-    queryKey: ['tasks', String(id)],
+    queryKey: ['task', String(id)],
     queryFn: () => getTask(id),
     retry(failureCount, error) {
       if (axios.isAxiosError(error)) {

@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useNavigate } from 'react-router';
 import { createTask } from '../services/task.service';
-import { getTasksQueryOptions } from './useTasksQuery';
 
 function useCreateTaskMutation() {
   const { updateAuth } = useAuth();
@@ -21,21 +20,25 @@ function useCreateTaskMutation() {
       )
         updateAuth({ status: 'unauthenticated' });
     },
-    onSuccess(data) {
-      queryClient.setQueryData(getTasksQueryOptions().queryKey, (tasks) => {
-        if (!tasks) return;
-
-        const existingTaskIndex = tasks.findIndex(
-          (task) => task.id === data.id,
-        );
-        if (existingTaskIndex !== -1) {
-          const newTasks = tasks.slice();
-          newTasks.splice(existingTaskIndex, 1, data);
-          return newTasks;
-        }
-
-        return [...tasks, data];
+    async onSuccess(data) {
+      await queryClient.invalidateQueries({
+        queryKey: ['tasks'],
+        exact: false,
       });
+      // queryClient.setQueryData(getTasksQueryOptions().queryKey, (tasks) => {
+      //   if (!tasks) return;
+
+      //   const existingTaskIndex = tasks.findIndex(
+      //     (task) => task.id === data.id,
+      //   );
+      //   if (existingTaskIndex !== -1) {
+      //     const newTasks = tasks.slice();
+      //     newTasks.splice(existingTaskIndex, 1, data);
+      //     return newTasks;
+      //   }
+
+      //   return [...tasks, data];
+      // });
       navigate(`/tasks/${data.id}`);
     },
   });

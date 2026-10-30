@@ -5,14 +5,13 @@ import axios from 'axios';
 import { useNavigate } from 'react-router';
 import { deleteTask } from '../services/task.service';
 import { getTaskQueryOptions } from './useTaskQuery';
-import { getTasksQueryOptions } from './useTasksQuery';
 
 function useDeleteTaskMutation() {
   const { updateAuth } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   return useMutation({
-    mutationKey: ['tasks', 'delete'],
+    mutationKey: ['task', 'delete'],
     mutationFn: deleteTask,
     onError(error) {
       if (axios.isAxiosError(error)) {
@@ -24,10 +23,11 @@ function useDeleteTaskMutation() {
         console.error('Failed to delete task');
       }
     },
-    onSuccess(_, taskId) {
-      queryClient.setQueryData(getTasksQueryOptions().queryKey, (tasks) =>
-        tasks?.filter((task) => task.id !== taskId),
-      );
+    async onSuccess(_, taskId) {
+      await queryClient.invalidateQueries({
+        queryKey: ['tasks'],
+        exact: false,
+      });
       queryClient.removeQueries({
         queryKey: getTaskQueryOptions(taskId).queryKey,
       });

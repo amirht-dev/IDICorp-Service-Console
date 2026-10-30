@@ -5,7 +5,6 @@ import axios from 'axios';
 import { updateTask } from '../services/task.service';
 import type { UpdateTaskInput } from '../types';
 import { getTaskQueryOptions } from './useTaskQuery';
-import { getTasksQueryOptions } from './useTasksQuery';
 
 function useUpdateTaskMutation() {
   const { updateAuth } = useAuth();
@@ -22,10 +21,11 @@ function useUpdateTaskMutation() {
       )
         updateAuth({ status: 'unauthenticated' });
     },
-    onSuccess(data, variables) {
-      queryClient.setQueryData(getTasksQueryOptions().queryKey, (tasks) =>
-        tasks?.map((task) => (task.id === data.id ? data : task)),
-      );
+    async onSuccess(data, variables) {
+      await queryClient.invalidateQueries({
+        queryKey: ['tasks'],
+        exact: false,
+      });
       queryClient.setQueryData(
         getTaskQueryOptions(variables.id).queryKey,
         data,
