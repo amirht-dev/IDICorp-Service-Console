@@ -64,7 +64,12 @@ function TaskCard({ task }: TaskCardProps) {
 
 function TaskCardSkeleton() {
   return (
-    <div className="flex gap-2 border rounded-md p-2 h-32">
+    <div
+      className="flex gap-2 border rounded-md p-2 h-32"
+      role="presentation"
+      aria-busy
+      aria-label="task card skeleton"
+    >
       <Skeleton className="h-full aspect-square rounded-md shrink-0 grow-0" />
 
       <div className="flex-1 flex flex-col">
