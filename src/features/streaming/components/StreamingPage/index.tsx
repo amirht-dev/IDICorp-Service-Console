@@ -1,5 +1,6 @@
 import PageHeading from '@/components/shared/PageHeading';
 import { Card, CardContent, CardTitle } from '@/components/ui/Card';
+import CopyButton from '@/components/ui/CopyButton';
 import {
   DetailCard,
   DetailCardContent,
@@ -44,12 +45,19 @@ const StreamingPage = () => {
         <StreamingForm onSend={startStream} disabled={loading} />
 
         <Card>
-          <CardTitle>
-            <span className="flex items-center gap-2">
-              Response
-              {loading && <Spinner />}
-            </span>
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>
+              <span className="flex items-center gap-2">
+                Response
+                {loading && <Spinner />}
+              </span>
+            </CardTitle>
+
+            {responseMessage && (
+              <CopyButton content={responseMessage} disabled={loading} />
+            )}
+          </div>
+
           <CardContent>
             {error ? (
               <DetailCard
