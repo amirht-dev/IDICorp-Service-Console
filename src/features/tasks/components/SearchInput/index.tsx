@@ -1,13 +1,14 @@
-import { SearchIcon } from 'lucide-react';
-import { useCallback, useState, type ComponentProps } from 'react';
-import type { Merge } from 'type-fest';
-import { useDebounceCallback } from 'usehooks-ts';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/InputGroup';
 import { Kbd } from '@/components/ui/Kbd';
+import useKeyboardShortcut from '@/hooks/useKeyboardShortcut';
+import { SearchIcon } from 'lucide-react';
+import { useCallback, useRef, useState, type ComponentProps } from 'react';
+import type { Merge } from 'type-fest';
+import { useDebounceCallback } from 'usehooks-ts';
 
 type SearchInputProps = Merge<
   ComponentProps<typeof InputGroupInput>,
@@ -22,6 +23,7 @@ const SearchInput = ({
   ...props
 }: SearchInputProps) => {
   const [value, setValue] = useState('');
+  const ref = useRef<HTMLInputElement>(null);
 
   const callback = useCallback(
     (value: string) => {
@@ -32,9 +34,14 @@ const SearchInput = ({
 
   const debounce = useDebounceCallback(callback, 500);
 
+  useKeyboardShortcut({ key: 'k', ctrl: true }, () => {
+    ref.current?.focus();
+  });
+
   return (
     <InputGroup className={className}>
       <InputGroupInput
+        ref={ref}
         aria-label="search tasks"
         placeholder="Search tasks..."
         value={value}
