@@ -34,7 +34,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
     }
 
-    const upstream = await fetch('https://ts.idicorp.ir/api/auth/login', init);
+    const VITE_HTTP_API_BASE_URL = process.env.VITE_HTTP_API_BASE_URL;
+
+    if (!VITE_HTTP_API_BASE_URL)
+      throw new Error('VITE_HTTP_API_BASE_URL env does not exists');
+
+    const upstream = await fetch(
+      `${VITE_HTTP_API_BASE_URL}/api/auth/login`,
+      init,
+    );
 
     const responseBody = await upstream.text();
 
