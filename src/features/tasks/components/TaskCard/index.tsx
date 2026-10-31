@@ -15,7 +15,7 @@ function TaskCard({ task }: TaskCardProps) {
   return (
     <>
       <div
-        className="flex gap-2 border rounded-md p-2 h-32"
+        className="flex gap-2 border rounded-md p-2 h-28 lg:h-32"
         role="listitem"
         aria-labelledby={titleId}
         aria-describedby={descId}
@@ -36,11 +36,14 @@ function TaskCard({ task }: TaskCardProps) {
         </div>
 
         <div className="flex-1 flex flex-col">
-          <h5 className="text-lg font-medium line-clamp-1" id={titleId}>
+          <h5
+            className="text-base lg:text-lg font-medium line-clamp-1"
+            id={titleId}
+          >
             {task.title}
           </h5>
           <p
-            className="text-base line-clamp-2 mt-2 text-muted-foreground"
+            className="text-sm lg:text-base line-clamp-2 text-muted-foreground"
             id={descId}
           >
             {task.description}
