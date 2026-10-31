@@ -1,3 +1,4 @@
+import RHFDevTool from '@/components/helpers/RHFDevTool';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardTitle } from '@/components/ui/Card';
 import {
@@ -7,7 +8,6 @@ import {
   FieldLabel,
 } from '@/components/ui/Field';
 import { Textarea } from '@/components/ui/Textarea';
-import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BrushCleaningIcon, SendIcon } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
@@ -95,7 +95,7 @@ export const StreamingForm = ({
         </CardContent>
       </Card>
 
-      <DevTool control={control} />
+      <RHFDevTool control={control} />
     </>
   );
 };

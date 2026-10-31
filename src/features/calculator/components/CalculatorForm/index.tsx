@@ -1,3 +1,4 @@
+import RHFDevTool from '@/components/helpers/RHFDevTool';
 import { Button } from '@/components/ui/Button';
 import {
   Field,
@@ -12,7 +13,6 @@ import {
 } from '@/components/ui/MultipleInput';
 import { Spinner } from '@/components/ui/Spinner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/ToggleGroup';
-import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cn } from 'cn';
 import {
@@ -213,7 +213,7 @@ const CalculatorForm = ({
         </div>
       </form>
 
-      <DevTool control={control} />
+      <RHFDevTool control={control} />
     </>
   );
 };
