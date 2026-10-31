@@ -1,6 +1,7 @@
 import logoIcon_image from '@/assets/images/logo-icon.webp';
+import AlertBox from '@/components/ui/AlertBox';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import {
   Field,
   FieldError,
@@ -126,22 +127,21 @@ const SignInForm = () => {
         </div>
 
         <form onSubmit={handleSignIn}>
-          <Card className="mb-4 bg-warning/10 border-warning text-warning">
-            <CardContent className="text-sm">
-              for sign in as test user use{' '}
-              <button
-                className="underline"
-                type="button"
-                onClick={() => {
-                  setValue('username', 'admin');
-                  setValue('password', 'admin');
-                }}
-              >
-                <b>admin</b>
-              </button>{' '}
-              for both username and password
-            </CardContent>
-          </Card>
+          <AlertBox className="mb-4">
+            for sign in as test user use{' '}
+            <button
+              className="underline"
+              type="button"
+              onClick={() => {
+                setValue('username', 'admin');
+                setValue('password', 'admin');
+              }}
+            >
+              <b>admin</b>
+            </button>{' '}
+            for both username and password
+          </AlertBox>
+
           <FieldGroup>
             {errors.root && (
               <Card className="border-error bg-error/10 text-error text-sm">

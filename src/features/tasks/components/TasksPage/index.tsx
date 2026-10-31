@@ -1,6 +1,6 @@
 import PageHeading from '@/components/shared/PageHeading';
+import AlertBox from '@/components/ui/AlertBox';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
 import { PlusIcon } from 'lucide-react';
 import CreateTaskDialog from '../CreateTaskDialog';
 import TasksList from '../TaskList';
@@ -26,14 +26,12 @@ const TasksPage = () => {
         </div>
       </div>
 
-      <Card className="border-warning text-warning bg-warning/10 text-sm mt-4">
-        <CardContent>
-          <p>
-            Based on the Redis implementation on the server, each task expires{' '}
-            <b>one hour</b> after it is created or last updated.
-          </p>
-        </CardContent>
-      </Card>
+      <AlertBox className="mt-4">
+        <p>
+          Based on the Redis implementation on the server, each task expires{' '}
+          <b>one hour</b> after it is created or last updated.
+        </p>
+      </AlertBox>
 
       <div className="mt-6">
         <TasksList />
