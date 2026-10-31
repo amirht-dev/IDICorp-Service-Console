@@ -2,6 +2,12 @@
 
 A responsive web-based Service Console built with React, TypeScript, and Vite. The application provides authentication, task management, and interactive communication tools using WebSocket and HTTP streaming.
 
+## Live Preview
+
+The application is deployed on Vercel and available at:
+
+**[Open Service Console Demo](https://idi-corp-service-console-livid.vercel.app/)**
+
 ## Features
 
 - **Authentication**
