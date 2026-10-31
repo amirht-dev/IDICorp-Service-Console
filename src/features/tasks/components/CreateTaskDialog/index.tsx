@@ -1,3 +1,4 @@
+import RHFDevTool from '@/components/helpers/RHFDevTool';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -19,7 +20,6 @@ import {
 } from '@/components/ui/Field';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { useState, type ReactElement } from 'react';
@@ -181,7 +181,7 @@ const CreateTaskDialog = ({ trigger }: CreateTaskDialogProps) => {
           </form>
         </DialogContent>
       </Dialog>
-      <DevTool control={control} />
+      <RHFDevTool control={control} />
     </>
   );
 };

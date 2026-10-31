@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/InputGroup';
 import PasswordInput from '@/components/ui/PasswordInput';
 import { Spinner } from '@/components/ui/Spinner';
-import { DevTool } from '@hookform/devtools';
+import RHFDevTool from '@/components/helpers/RHFDevTool';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { ArrowRightIcon, RefreshCwIcon, UserIcon } from 'lucide-react';
@@ -259,7 +259,7 @@ const SignInForm = () => {
         </form>
       </div>
 
-      <DevTool control={control} />
+      <RHFDevTool control={control} />
     </>
   );
 };
