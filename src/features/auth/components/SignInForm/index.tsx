@@ -14,42 +14,16 @@ import {
 } from '@/components/ui/InputGroup';
 import PasswordInput from '@/components/ui/PasswordInput';
 import { Spinner } from '@/components/ui/Spinner';
+import { handleApiError } from '@/lib/errors';
 import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
 import { ArrowRightIcon, RefreshCwIcon, UserIcon } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
-import { z } from 'zod/v4';
 import useCaptchaQuery from '../../hooks/useCaptchaQuery';
 import useSignInMutation from '../../hooks/useSignInMutation';
 import { signInFormSchema } from '../../schemas';
 import CaptchaErrorCard from '../CaptchaErrorCard';
-
-const validationErrorSchema = z.array(
-  z.object({
-    loc: z.array(z.string()),
-    msg: z.string(),
-    type: z.enum(['string_type', 'missing', 'string_too_short']),
-    input: z.unknown(),
-    ctx: z.object(),
-  }),
-);
-
-const apiErrorSchema = z.discriminatedUnion('status', [
-  z.object({
-    status: z.literal(401),
-    detail: z.string(),
-  }),
-  z.object({
-    status: z.literal(422),
-    detail: validationErrorSchema,
-  }),
-]);
-
-function isIn<T extends object>(key: PropertyKey, object: T): key is keyof T {
-  return key in object;
-}
 
 const SignInForm = () => {
   const captchaQuery = useCaptchaQuery();
@@ -71,7 +45,7 @@ const SignInForm = () => {
     async ({ captcha_answer, username, password }) => {
       if (!captchaQuery.isSuccess) return;
 
-      await signInMutation.mutateAsync(
+      signInMutation.mutate(
         {
           salt: captchaQuery.data.salt,
           captcha_answer,
@@ -80,20 +54,26 @@ const SignInForm = () => {
         },
         {
           onError(error) {
-            if (axios.isAxiosError(error)) {
-              const err = apiErrorSchema.parse({
-                ...error.response?.data,
-                status: error.status,
-              });
-              if (err.status === 401) setError('root', { message: err.detail });
-              if (err.status === 422)
-                err.detail.forEach((err) => {
-                  const field = err.loc.at(1);
-                  if (field && isIn(field, signInFormSchema.shape))
-                    setError(field, { message: err.msg });
-                });
-            }
-            console.error(error);
+            const err = handleApiError(error);
+
+            let message: string = '';
+
+            if (err.type == 'network')
+              message = 'Unable to connect to server. Please try again';
+            else if (err.type == 'timeout')
+              message =
+                'The server did not respond within the allotted time. Please try again.';
+            else if (err.type == 'cancelled')
+              message = 'The request was cancelled. Please try again.';
+            else if (err.type == 'http') {
+              if (err.status == 401)
+                message = 'Invalid username, password or captcha';
+              if (err.status >= 500)
+                message =
+                  'ّServer is unavailable right now. Please try again later.';
+            } else message = 'Something wrong happened. Please try again';
+
+            setError('root', { message });
           },
           onSuccess() {
             navigate('/tasks');
@@ -105,14 +85,20 @@ const SignInForm = () => {
 
   const isDisabled = disabled || isSubmitting || (isSubmitted && !isValid);
 
-  if (captchaQuery.isError)
+  if (captchaQuery.isError) {
+    const err = handleApiError(captchaQuery.error);
     return (
       <CaptchaErrorCard
         className="max-w-sm w-full"
-        message={captchaQuery.error.message}
+        message={
+          err.type === 'http' && err.status >= 500
+            ? 'Server is unable to send captcha right now. Please try again later.'
+            : undefined
+        }
         onReload={() => captchaQuery.refetch()}
       />
     );
+  }
 
   return (
     <>
@@ -133,8 +119,14 @@ const SignInForm = () => {
                 className="underline"
                 type="button"
                 onClick={() => {
-                  setValue('username', 'admin');
-                  setValue('password', 'admin');
+                  setValue('username', 'admin', {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  });
+                  setValue('password', 'admin', {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  });
                 }}
               >
                 <b>admin</b>
@@ -144,7 +136,11 @@ const SignInForm = () => {
           </Card>
           <FieldGroup>
             {errors.root && (
-              <Card className="border-error bg-error/10 text-error text-sm">
+              <Card
+                className="border-error bg-error/10 text-error text-sm"
+                role="alert"
+                data-testid="signin-error"
+              >
                 {errors.root?.message}
               </Card>
             )}
@@ -218,13 +214,14 @@ const SignInForm = () => {
                     <div
                       className="w-38 bg-secondary rounded-sm overflow-hidden text-foreground relative flex items-center justify-center"
                       aria-label="captcha"
+                      aria-busy={captchaQuery.isLoading}
                     >
                       {captchaQuery.isFetching ? (
-                        <Spinner />
+                        <Spinner aria-label="loading" />
                       ) : captchaQuery.isSuccess ? (
                         <img
                           src={captchaQuery.data.captcha}
-                          alt=""
+                          alt="captcha image"
                           className="absolute w-full h-full inset-0"
                         />
                       ) : null}

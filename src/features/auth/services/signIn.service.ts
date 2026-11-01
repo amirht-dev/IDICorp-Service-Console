@@ -2,12 +2,10 @@ import { baseApi } from '@/lib/axios';
 import type { AxiosResponseDefault } from 'axios';
 import type { SignInInput, SignInResponse } from '../types';
 
-export async function signIn({
-  username,
-  password,
-  salt,
-  captcha_answer,
-}: SignInInput) {
+export async function signIn(
+  { username, password, salt, captcha_answer }: SignInInput,
+  options?: { signal?: AbortSignal },
+) {
   const response = await baseApi.post<
     SignInResponse,
     AxiosResponseDefault,
@@ -15,8 +13,7 @@ export async function signIn({
   >(
     '/auth/login',
     { username, password, salt, captcha_answer },
-    { withCredentials: true },
+    { withCredentials: true, timeout: 10_000, signal: options?.signal },
   );
-
   return response.data;
 }
