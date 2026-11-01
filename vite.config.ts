@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
     test: {
       dir: './src',
       globals: true,
+      setupFiles: ['./src/testSetups/global.ts'],
       projects: [
         {
           test: {
