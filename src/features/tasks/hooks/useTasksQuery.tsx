@@ -26,8 +26,9 @@ export const getTasksQueryOptions = (
     queryKey: ['tasks', filters] as const,
     queryFn: ({ queryKey }) => getTasks(queryKey[1]),
     retry(failureCount, error) {
+      if (import.meta.env.MODE === 'test') return false;
       if (axios.isAxiosError(error) && error.status === 401) return false;
-      if (failureCount > 10) return false;
+      if (failureCount > 3) return false;
 
       return true;
     },
