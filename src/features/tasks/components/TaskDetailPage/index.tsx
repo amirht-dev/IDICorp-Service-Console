@@ -5,77 +5,81 @@ import { Card, CardTitle } from '@/components/ui/Card';
 import {
   DetailCard,
   DetailCardContent,
-  DetailCardDescription,
   DetailCardHeader,
   DetailCardMedia,
   DetailCardTitle,
 } from '@/components/ui/DetailCard';
 import { Skeleton } from '@/components/ui/Skeleton';
-import axios from 'axios';
+import { handleApiError } from '@/lib/errors';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import {
   ArrowLeftIcon,
   ChevronLeftIcon,
-  RefreshCwIcon,
   TriangleAlertIcon,
 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate } from 'react-router';
+import useTaskParam from '../../hooks/useTaskParam';
 import useTaskQuery from '../../hooks/useTaskQuery';
 import TaskActionsDropdown from '../TaskActionsDropdown';
 
 const TaskDetailPage = () => {
-  const { taskId } = useParams();
-  if (!taskId) throw new Error('No taskId');
+  const { taskId } = useTaskParam();
+  // const { taskId } = useParams();
+  // if (!taskId) throw new Error('No taskId');
 
   const query = useTaskQuery(taskId);
 
   const navigate = useNavigate();
 
-  if (
-    query.isError &&
-    axios.isAxiosError(query.error) &&
-    query.error.status === 404
-  )
-    return (
-      <Card className="min-h-100 flex items-center justify-center">
-        <div className="flex items-center gap-4 divide-x">
-          <span className="text-3xl lg:text-4xl pe-4">404</span>
-          <CardTitle>Task you want to see is not exists</CardTitle>
-        </div>
-        <Button variant="outline" onClick={() => navigate('/tasks')}>
-          <ArrowLeftIcon />
-          Go To Tasks
-        </Button>
-      </Card>
-    );
+  if (query.isError) {
+    const err = handleApiError(query.error);
 
-  if (query.isError)
-    return (
-      <DetailCard
-        variant="error"
-        className="rounded-lg border-dashed border-destructive border"
-      >
-        <DetailCardHeader>
-          <DetailCardMedia variant="icon">
-            <TriangleAlertIcon />
-          </DetailCardMedia>
-          <DetailCardTitle>Failed To Load Task</DetailCardTitle>
-          <DetailCardDescription>
-            something wrong happened when loading task. {query.error.message}
-          </DetailCardDescription>
-        </DetailCardHeader>
-        <DetailCardContent>
+    if (err.type === 'http' && err.status === 404)
+      return (
+        <Card className="min-h-100 flex items-center justify-center">
+          <div className="flex items-center gap-4 divide-x">
+            <span className="text-3xl lg:text-4xl pe-4">404</span>
+            <CardTitle>Task you want to see does not exists</CardTitle>
+          </div>
           <Button variant="outline" onClick={() => navigate('/tasks')}>
             <ArrowLeftIcon />
             Go To Tasks
           </Button>
-          <Button variant="destructive" onClick={() => query.refetch()}>
-            <RefreshCwIcon />
+        </Card>
+      );
+
+    return (
+      <DetailCard className="border border-dashed" variant="error">
+        <DetailCardHeader>
+          <DetailCardMedia variant="icon">
+            <TriangleAlertIcon />
+          </DetailCardMedia>
+          <DetailCardTitle>
+            {err.type === 'network'
+              ? 'Unable to connect to server. Please try again.'
+              : err.type === 'timeout'
+                ? 'The server did not respond within allotted time. Please try again.'
+                : err.type === 'cancelled'
+                  ? 'Loading task was cancelled.'
+                  : err.type === 'http'
+                    ? err.status >= 500
+                      ? 'Server is unavailable right now. Please try again later.'
+                      : 'Failed to load task.'
+                    : 'Something wrong happened while loading task. Please try again later.'}
+          </DetailCardTitle>
+        </DetailCardHeader>
+        <DetailCardContent>
+          <Button
+            variant="destructive"
+            size="lg"
+            onClick={() => query.refetch()}
+          >
             Reload Task
           </Button>
         </DetailCardContent>
       </DetailCard>
     );
+  }
 
   return (
     <div>
