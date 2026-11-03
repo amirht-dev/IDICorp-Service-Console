@@ -22,7 +22,6 @@ function useCreateTaskMutation() {
       return true;
     },
     onError(error) {
-      if (axios.isAxiosError(error)) console.log(error.response?.data);
       if (
         error instanceof UnauthenticatedError ||
         (axios.isAxiosError(error) && error.status === 401)

@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
 import {
   Dialog,
@@ -18,9 +19,9 @@ import {
 } from '@/components/ui/Field';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
+import { handleApiError } from '@/lib/errors';
 import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
 import { type ComponentProps, type ReactElement } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import type { Arrayable } from 'type-fest';
@@ -54,21 +55,35 @@ const EditTaskDialog = ({
     resolver: zodResolver(updateTaskInputSchema),
   });
 
-  const { isSubmitted, isSubmitting, disabled, isValid } = formState;
+  const { isSubmitted, isSubmitting, disabled, isValid, errors } = formState;
 
   const submitHandler = handleSubmit(async (data) => {
-    await mutation.mutateAsync(
+    mutation.mutate(
       { id: task.id, input: data },
       {
         onError(error) {
-          if (axios.isAxiosError(error)) {
-            if (error.status === 422)
-              console.error('validation error', error.response?.data);
-            if (error.status === 503)
-              setError('root', {
-                message: 'something wrong happened. try again later',
-              });
-          }
+          const err = handleApiError(error);
+
+          let message: string;
+
+          if (err.type === 'network') {
+            message = 'Unable to connect to server. Please try again.';
+          } else if (err.type === 'timeout') {
+            message =
+              'Server did not respond within allotted time. Please try again.';
+          } else if (err.type === 'cancelled') {
+            message = 'Editing task was cancelled. please try again';
+          } else if (err.type === 'http') {
+            if (err.status === 422)
+              message =
+                'Server validation error. See console for more details.';
+            else if (err.status >= 500)
+              message =
+                'Failed to edit task. Server is unavailable right now. Please try again later.';
+            else message = 'Failed to edit task.';
+          } else message = 'Unknown error occurred when editing task.';
+
+          setError('root', { message });
           onError?.(error);
         },
         onSuccess(data) {
@@ -96,6 +111,11 @@ const EditTaskDialog = ({
             <DialogTitle>Edit Task</DialogTitle>
             <DialogDescription>Edit task details</DialogDescription>
           </DialogHeader>
+          {errors.root && (
+            <Card className="border-error bg-error/10 text-error text-sm">
+              {errors.root?.message}
+            </Card>
+          )}
           <form onSubmit={submitHandler}>
             <FieldGroup>
               <Controller
@@ -103,7 +123,9 @@ const EditTaskDialog = ({
                 name="title"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="task-title">Title</FieldLabel>
+                    <FieldLabel required htmlFor="task-title">
+                      Title
+                    </FieldLabel>
                     <Input
                       id="task-title"
                       aria-invalid={fieldState.invalid}
