@@ -7,6 +7,7 @@ import { userEvent } from '@testing-library/user-event';
 import { delay, http, HttpResponse } from 'msw';
 import TasksList from '.';
 import type { getTasks } from '../../services/tasks.service';
+import type { TaskModel } from '../../types';
 
 beforeEach(() => {
   vi.useRealTimers();
@@ -81,6 +82,28 @@ test('should shows all tasks by default and when all tasks tab is selected', asy
   expect(taskItems).toHaveLength(demoTasks.length);
 });
 
+test('should shows empty tasks message when no tasks exists yet', async () => {
+  server.use(
+    http.get(`/api/tasks`, () => {
+      return mockJsonResponse<typeof getTasks>([]);
+    }),
+  );
+
+  render(<TasksList />);
+
+  await waitFor(() =>
+    expect(
+      screen.queryAllByRole('presentation', {
+        busy: true,
+      }),
+    ).toHaveLength(0),
+  );
+
+  await waitFor(() =>
+    expect(screen.queryByText(/no tasks yet/i)).toBeInTheDocument(),
+  );
+});
+
 describe('filtering', () => {
   test('should only shows tasks that includes searched query', async () => {
     server.use(
@@ -121,6 +144,35 @@ describe('filtering', () => {
     expect(taskItems).toHaveLength(filteredTasks.length);
   });
 
+  test('should shows not found message when searching query', async () => {
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return mockJsonResponse<typeof getTasks>(demoTasks);
+      }),
+    );
+
+    const user = userEvent.setup();
+
+    render(<TasksList />);
+
+    const searchInput = screen.getByPlaceholderText(/search tasks/i);
+
+    await waitFor(() => expect(searchInput).toBeEnabled());
+
+    server.resetHandlers();
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return mockJsonResponse<typeof getTasks>([]);
+      }),
+    );
+
+    await user.type(searchInput, 'something');
+
+    await waitFor(() =>
+      expect(screen.getByText(/^no tasks found$/i)).toBeInTheDocument(),
+    );
+  });
+
   test('should only shows active tasks when active tab is selected', async () => {
     server.use(
       http.get(`/api/tasks`, ({ request }) => {
@@ -159,6 +211,35 @@ describe('filtering', () => {
     );
   });
 
+  test('should shows no tasks message when active tab is selected and no active tasks exists', async () => {
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return HttpResponse.json<TaskModel[]>(demoTasks);
+      }),
+    );
+
+    const user = userEvent.setup();
+
+    render(<TasksList />);
+
+    const activeTab = screen.getByRole('tab', { name: /active/i });
+
+    await waitFor(() => expect(activeTab).toBeEnabled());
+
+    server.resetHandlers();
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return HttpResponse.json<TaskModel[]>([]);
+      }),
+    );
+
+    await user.click(activeTab);
+
+    await waitFor(() =>
+      expect(screen.queryByText(/^no tasks found$/i)).toBeInTheDocument(),
+    );
+  });
+
   test('should only shows completed tasks when completed tab is selected', async () => {
     server.use(
       http.get(`/api/tasks`, ({ request }) => {
@@ -194,6 +275,35 @@ describe('filtering', () => {
 
     expect(taskItems).toHaveLength(
       demoTasks.filter((task) => task.completed).length,
+    );
+  });
+
+  test('should shows no tasks message when completed tab is selected and no completed tasks exists', async () => {
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return HttpResponse.json<TaskModel[]>(demoTasks);
+      }),
+    );
+
+    const user = userEvent.setup();
+
+    render(<TasksList />);
+
+    const completedTab = screen.getByRole('tab', { name: /completed/i });
+
+    await waitFor(() => expect(completedTab).toBeEnabled());
+
+    server.resetHandlers();
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return HttpResponse.json<TaskModel[]>([]);
+      }),
+    );
+
+    await user.click(completedTab);
+
+    await waitFor(() =>
+      expect(screen.queryByText(/^no tasks found$/i)).toBeInTheDocument(),
     );
   });
 
