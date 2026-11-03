@@ -1,4 +1,6 @@
+import { useAuth } from '@/features/auth/providers/AuthProvider';
 import { useEffect, useRef, useState } from 'react';
+import { AuthenticationError, HTTPError, NetworkError } from '../errors';
 import { textStreaming } from '../services/streaming.service';
 
 function useStreamingText({
@@ -29,6 +31,8 @@ function useStreamingText({
     onFailedRef.current = onFailed;
   }, [onFailed]);
 
+  const { updateAuth } = useAuth();
+
   const startStream = async (message: string) => {
     setResponseMessage('');
     setError(null);
@@ -43,12 +47,28 @@ function useStreamingText({
       });
     } catch (error) {
       onFailedRef.current?.(error);
-      setError(
+
+      if (error instanceof NetworkError)
+        return setError(
+          'Unable to connect to server right now. Please try again later.',
+        );
+      if (
+        error instanceof AuthenticationError ||
+        (error instanceof HTTPError && error.status === 401)
+      ) {
+        return updateAuth({ status: 'unauthenticated' });
+      }
+      if (error instanceof HTTPError) {
+        return setError(
+          error.status >= 500
+            ? 'Server is unavailable right now. Please try again later.'
+            : 'Failed to stream content',
+        );
+      }
+      return setError(
         error instanceof Error
           ? error.message
-          : typeof error === 'string'
-            ? error
-            : 'something wrong happened when streaming message',
+          : 'something wrong happened when streaming message',
       );
     } finally {
       setLoading(false);

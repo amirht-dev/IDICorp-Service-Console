@@ -23,7 +23,13 @@ const CopyButton = ({ content, ...props }: CopyButtonProps) => {
     setTimeout(() => setClicked(false), 1000);
   };
   return (
-    <Button variant="ghost" {...props} onClick={handleCopy} size="icon">
+    <Button
+      variant="ghost"
+      {...props}
+      onClick={handleCopy}
+      size="icon"
+      aria-label="copy"
+    >
       {clicked ? <CheckIcon className="text-success" /> : <CopyIcon />}
     </Button>
   );

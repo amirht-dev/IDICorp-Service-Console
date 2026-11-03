@@ -10,8 +10,6 @@ import {
   DetailCardTitle,
 } from '@/components/ui/DetailCard';
 import { Spinner } from '@/components/ui/Spinner';
-import { useAuth } from '@/features/auth/providers/AuthProvider';
-import { UnauthenticatedError } from '@/lib/exceptions';
 import { SquareTextIcon, TriangleAlertIcon } from 'lucide-react';
 import { useRef } from 'react';
 import useStreamingText from '../../hooks/useStreamText';
@@ -20,20 +18,12 @@ import { StreamingForm } from '../StreamingForm';
 const StreamingPage = () => {
   const responseRef = useRef<HTMLDivElement>(null);
 
-  const { updateAuth } = useAuth();
-
   const { responseMessage, error, loading, progress, startStream } =
     useStreamingText({
       onStream: () => {
         responseRef.current?.scrollTo({
           top: responseRef.current.scrollHeight,
         });
-      },
-      onFailed(error) {
-        if (error instanceof UnauthenticatedError) {
-          updateAuth({ status: 'unauthenticated' });
-          return;
-        }
       },
     });
 
@@ -49,7 +39,9 @@ const StreamingPage = () => {
             <CardTitle>
               <span className="flex items-center gap-2">
                 Response
-                {loading && <Spinner />}
+                {loading && (
+                  <Spinner role="presentation" aria-label="loading" />
+                )}
               </span>
             </CardTitle>
 
@@ -91,7 +83,10 @@ const StreamingPage = () => {
                   className="bg-success h-0.5 sticky top-0"
                   style={{ width: `${progress * 100}%` }}
                 />
-                <pre className="bg-secondary text-secondary-foreground p-3 rounded-md min-h-full text-wrap">
+                <pre
+                  role="log"
+                  className="bg-secondary text-secondary-foreground p-3 rounded-md min-h-full text-wrap"
+                >
                   {responseMessage}
                 </pre>
               </div>
