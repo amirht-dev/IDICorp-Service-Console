@@ -220,7 +220,7 @@ const SignInForm = () => {
                         <Spinner aria-label="loading" />
                       ) : captchaQuery.isSuccess ? (
                         <img
-                          src={captchaQuery.data.captcha}
+                          src={captchaQuery.data.captcha || undefined}
                           alt="captcha image"
                           className="absolute w-full h-full inset-0"
                         />
