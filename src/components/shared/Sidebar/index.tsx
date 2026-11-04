@@ -4,6 +4,7 @@ import logo_image from '@/assets/images/logo_text_row_dark.webp';
 import streaming_image from '@/assets/images/streaming.webp';
 import tasks_image from '@/assets/images/tasks.webp';
 import { Button } from '@/components/ui/Button';
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import { useAuth } from '@/features/auth/providers/AuthProvider';
 import { cn } from 'cn';
 import { LogOutIcon } from 'lucide-react';
@@ -22,7 +23,6 @@ const Sidebar = ({ onNavigation }: { onNavigation?: () => void }) => {
   return (
     <div className="h-dvh bg-sidebar text-sidebar-foreground px-4 py-8 flex flex-col">
       <img src={logo_image} alt="" className="w-50" />
-
       <ul className="flex flex-col mt-14 gap-3">
         {navLinks.map((item, idx) => (
           <li key={idx}>
@@ -43,15 +43,19 @@ const Sidebar = ({ onNavigation }: { onNavigation?: () => void }) => {
         ))}
       </ul>
 
-      <Button
-        variant="secondary"
-        size="xl"
-        className="mt-auto"
-        onClick={() => updateAuth({ status: 'unauthenticated' })}
-      >
-        Sign out
-        <LogOutIcon />
-      </Button>
+      <div className="flex items-center gap-2 mt-auto">
+        <Button
+          variant="secondary"
+          size="xl"
+          className="flex-1"
+          onClick={() => updateAuth({ status: 'unauthenticated' })}
+        >
+          Sign out
+          <LogOutIcon />
+        </Button>
+
+        <ThemeSwitcher className="max-lg:hidden text-foreground" />
+      </div>
     </div>
   );
 };

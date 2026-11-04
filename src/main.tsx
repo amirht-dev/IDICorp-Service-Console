@@ -7,6 +7,7 @@ import App from './App.tsx';
 
 import AuthProvider from './features/auth/providers/AuthProvider.tsx';
 import './index.css';
+import ThemeProvider from './providers/ThemeProvider.tsx';
 
 const queryClient = new QueryClient();
 
@@ -15,7 +16,9 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
-          <App />
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
         </BrowserRouter>
 
         <ReactQueryDevtools />

@@ -1,4 +1,5 @@
 import AuthProvider from '@/features/auth/providers/AuthProvider';
+import ThemeProvider from '@/providers/ThemeProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as module from '@testing-library/react';
 import type { ReactNode } from 'react';
@@ -16,7 +17,9 @@ export function render(ui: ReactNode, options?: module.RenderOptions) {
         }
       >
         <AuthProvider>
-          <MemoryRouter>{children}</MemoryRouter>
+          <MemoryRouter>
+            <ThemeProvider>{children}</ThemeProvider>
+          </MemoryRouter>
         </AuthProvider>
       </QueryClientProvider>
     ),
