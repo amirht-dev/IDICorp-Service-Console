@@ -8,6 +8,7 @@ import {
   DetailCardMedia,
   DetailCardTitle,
 } from '@/components/ui/DetailCard';
+import useDocumentTitle from '@/hooks/useDocumentTitle';
 import { ReadyState } from '@/hooks/useWebSocket';
 import { env } from '@/lib/env';
 import { TriangleAlertIcon } from 'lucide-react';
@@ -15,6 +16,7 @@ import useCalculateWS from '../../hooks/useCalculateWS';
 import CalculatorForm from '../CalculatorForm';
 
 const CalculatorPage = () => {
+  useDocumentTitle('Calculator');
   const { result, error, readyState, calculate, isReady, clear } =
     useCalculateWS();
 

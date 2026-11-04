@@ -9,8 +9,10 @@ import { env } from '@/lib/env';
 import useEchoWS from '../../hooks/useEchoWS';
 import EchoMessageForm from '../EchoMessageForm';
 import EchoMessagesList from '../EchoMessagesList';
+import useDocumentTitle from '@/hooks/useDocumentTitle';
 
 const EchoPage = () => {
+  useDocumentTitle('Echo');
   const { isReady, readyState, send, error, messagesHistory } = useEchoWS();
 
   const isDemo =

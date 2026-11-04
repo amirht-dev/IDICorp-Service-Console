@@ -1,7 +1,9 @@
 import signIn_image from '@/assets/images/sign-in.webp';
+import useDocumentTitle from '@/hooks/useDocumentTitle';
 import SignInForm from '../SignInForm';
 
 const SignInPage = () => {
+  useDocumentTitle('Sign in');
   return (
     <>
       <div className="flex h-dvh">

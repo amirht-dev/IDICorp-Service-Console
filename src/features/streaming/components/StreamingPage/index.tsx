@@ -10,12 +10,14 @@ import {
   DetailCardTitle,
 } from '@/components/ui/DetailCard';
 import { Spinner } from '@/components/ui/Spinner';
+import useDocumentTitle from '@/hooks/useDocumentTitle';
 import { SquareTextIcon, TriangleAlertIcon } from 'lucide-react';
 import { useRef } from 'react';
 import useStreamingText from '../../hooks/useStreamText';
 import { StreamingForm } from '../StreamingForm';
 
 const StreamingPage = () => {
+  useDocumentTitle('Streaming');
   const responseRef = useRef<HTMLDivElement>(null);
 
   const { responseMessage, error, loading, progress, startStream } =

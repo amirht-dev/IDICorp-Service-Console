@@ -1,11 +1,13 @@
 import PageHeading from '@/components/shared/PageHeading';
 import AlertBox from '@/components/ui/AlertBox';
 import { Button } from '@/components/ui/Button';
+import useDocumentTitle from '@/hooks/useDocumentTitle';
 import { PlusIcon } from 'lucide-react';
 import CreateTaskDialog from '../CreateTaskDialog';
 import TasksList from '../TaskList';
 
 const TasksPage = () => {
+  useDocumentTitle('Tasks');
   return (
     <div className="container">
       <div className="flex items-center justify-between">

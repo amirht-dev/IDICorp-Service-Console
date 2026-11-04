@@ -10,6 +10,7 @@ import {
   DetailCardTitle,
 } from '@/components/ui/DetailCard';
 import { Skeleton } from '@/components/ui/Skeleton';
+import useDocumentTitle from '@/hooks/useDocumentTitle';
 import { handleApiError } from '@/lib/errors';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import {
@@ -28,6 +29,7 @@ const TaskDetailPage = () => {
   // if (!taskId) throw new Error('No taskId');
 
   const query = useTaskQuery(taskId);
+  useDocumentTitle(query.isSuccess ? query.data.title : '');
 
   const navigate = useNavigate();
 
