@@ -1,9 +1,13 @@
 import { useAuth } from '@/features/auth/providers/AuthProvider';
+import useWebSocket, { ReadyState } from '@/hooks/useWebSocket';
 import { env } from '@/lib/env';
 import { useCallback, useEffect, useState } from 'react';
-import { calculatorMessageSchema, type CalculatorInput } from '../schemas';
-import { useWebSocket } from '@/lib/react-use-websocket';
-import { ReadyState } from 'react-use-websocket';
+import type { z } from 'zod/v4';
+import {
+  calculatorClientAuthenticateSchema,
+  calculatorClientRequestSchema,
+  calculatorServerMessageSchema,
+} from '../schemas';
 
 function useCalculateWS() {
   const [error, setError] = useState<string | null>(null);
@@ -11,13 +15,14 @@ function useCalculateWS() {
   const { accessToken } = useAuth();
   const [result, setResult] = useState<number | null>(null);
   const { readyState, sendMessage } = useWebSocket(env.VITE_CALCULATOR_WS_URL, {
-    retryOnError: true,
-    reconnectAttempts: 10,
-    onReconnectStop() {
-      setError('Websocket stop reconnecting after timeout');
+    reconnectAttempts: (closeEvent) => {
+      if (closeEvent.code === 1008) return false;
+      return 10;
     },
     onMessage(event) {
-      const message = calculatorMessageSchema.parse(JSON.parse(event.data));
+      const message = calculatorServerMessageSchema.parse(
+        JSON.parse(event.data),
+      );
 
       if ('error' in message) {
         if (message.error === 'Unauthorized')
@@ -36,12 +41,15 @@ function useCalculateWS() {
 
   useEffect(() => {
     if (!accessToken || isReady || readyState !== ReadyState.OPEN) return;
-
-    sendMessage(JSON.stringify({ token: accessToken }), false);
-  }, [sendMessage, accessToken, isReady, readyState]);
+    sendMessage(
+      JSON.stringify({
+        token: accessToken,
+      } satisfies z.infer<typeof calculatorClientAuthenticateSchema>),
+    );
+  }, [sendMessage, accessToken, isReady, readyState, error]);
 
   const calculate = useCallback(
-    (input: CalculatorInput) => {
+    (input: z.infer<typeof calculatorClientRequestSchema>) => {
       sendMessage(JSON.stringify(input));
     },
     [sendMessage],

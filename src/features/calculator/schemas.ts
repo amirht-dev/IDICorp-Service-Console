@@ -33,14 +33,31 @@ export const calculatorFormInputSchema = z
 
 export type CalculatorInput = z.infer<typeof calculatorFormInputSchema>;
 
-export const calculatorMessageSchema = z.union([
-  z.object({
-    type: z.string(),
-  }),
-  z.object({
-    error: z.string(),
-  }),
-  z.object({
-    result: z.number(),
-  }),
+export const calculatorServerConfirmSchema = z.object({
+  type: z.string(),
+});
+
+export const calculatorServerErrorSchema = z.object({
+  error: z.string(),
+});
+
+export const calculatorServerResponseSchema = z.object({
+  result: z.number(),
+});
+
+export const calculatorServerMessageSchema = z.union([
+  calculatorServerConfirmSchema,
+  calculatorServerErrorSchema,
+  calculatorServerResponseSchema,
+]);
+
+export const calculatorClientAuthenticateSchema = z.object({
+  token: z.string(),
+});
+
+export const calculatorClientRequestSchema = calculatorFormInputSchema;
+
+export const calculatorClientMessageSchema = z.union([
+  calculatorClientAuthenticateSchema,
+  calculatorFormInputSchema,
 ]);
