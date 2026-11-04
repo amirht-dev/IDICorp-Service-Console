@@ -6,8 +6,13 @@ import type {
   UpdateTaskInput,
 } from '../types';
 
-export async function getTask(id: string) {
-  const res = await getAuthApi().get<TaskResponseModel>(`/tasks/${id}`);
+export async function getTask(
+  data: { id: string },
+  options?: { signal?: AbortSignal },
+) {
+  const res = await getAuthApi().get<TaskResponseModel>(`/tasks/${data.id}`, {
+    signal: options?.signal,
+  });
   const task = res.data;
   return {
     ...task,

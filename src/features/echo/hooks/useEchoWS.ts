@@ -1,29 +1,37 @@
 import { useAuth } from '@/features/auth/providers/AuthProvider';
+import useWebSocket, { ReadyState } from '@/hooks/useWebSocket';
 import { env } from '@/lib/env';
-import { useWebSocket } from '@/lib/react-use-websocket';
 import { useCallback, useEffect, useState } from 'react';
-import { ReadyState } from 'react-use-websocket';
-import { echoMessageSchema, type EchoMessageInput } from '../schemas';
+import type { z } from 'zod/v4';
+import {
+  echoClientAuthenticateSchema,
+  echoClientRequestSchema,
+  echoMessageSchema,
+} from '../schemas';
 import type { MessageType } from '../types';
 
+type EchoErrorType = {
+  type: 'unauthorized' | 'unknown';
+  message?: string;
+};
+
 function useEchoWS() {
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<EchoErrorType | null>(null);
   const [isReady, setIsReady] = useState(false);
   const { accessToken } = useAuth();
   const [messagesHistory, setMessagesHistory] = useState<MessageType[]>([]);
   const { readyState, sendMessage } = useWebSocket(env.VITE_ECHO_WS_URL, {
-    retryOnError: true,
-    reconnectAttempts: 10,
-    onReconnectStop() {
-      setError('Websocket stop reconnecting after timeout');
+    reconnectAttempts: (closeEvent) => {
+      if (closeEvent.code === 1008) return false;
+      return 10;
     },
     onMessage(event) {
       const message = echoMessageSchema.parse(JSON.parse(event.data));
 
       if ('error' in message) {
         if (message.error === 'Unauthorized')
-          setError('Unauthorized. Please try sign out and sign in again');
-        else setError(message.error);
+          setError({ type: 'unauthorized' });
+        else setError({ type: 'unknown', message: message.error });
       }
 
       if ('type' in message) setIsReady(message.type === 'ready');
@@ -42,11 +50,19 @@ function useEchoWS() {
   useEffect(() => {
     if (!accessToken || isReady || readyState !== ReadyState.OPEN) return;
 
-    sendMessage(JSON.stringify({ token: accessToken }), false);
+    sendMessage(
+      JSON.stringify({ token: accessToken } satisfies z.infer<
+        typeof echoClientAuthenticateSchema
+      >),
+    );
   }, [sendMessage, accessToken, isReady, readyState]);
 
   const send = useCallback(
-    (input: EchoMessageInput) => {
+    (input: z.infer<typeof echoClientRequestSchema>) => {
+      setMessagesHistory((prev) => [
+        ...prev,
+        { message: input.message, sender: true },
+      ]);
       sendMessage(JSON.stringify(input));
     },
     [sendMessage],
@@ -61,3 +77,66 @@ function useEchoWS() {
 }
 
 export default useEchoWS;
+// import { useAuth } from '@/features/auth/providers/AuthProvider';
+// import { env } from '@/lib/env';
+// import { useWebSocket } from '@/lib/react-use-websocket';
+// import { useCallback, useEffect, useState } from 'react';
+// import { ReadyState } from 'react-use-websocket';
+// import { echoMessageSchema, type EchoMessageInput } from '../schemas';
+// import type { MessageType } from '../types';
+
+// function useEchoWS() {
+//   const [error, setError] = useState<string | null>(null);
+//   const [isReady, setIsReady] = useState(false);
+//   const { accessToken } = useAuth();
+//   const [messagesHistory, setMessagesHistory] = useState<MessageType[]>([]);
+//   const { readyState, sendMessage } = useWebSocket(env.VITE_ECHO_WS_URL, {
+//     retryOnError: true,
+//     reconnectAttempts: 10,
+//     onReconnectStop() {
+//       setError('Websocket stop reconnecting after timeout');
+//     },
+//     onMessage(event) {
+//       const message = echoMessageSchema.parse(JSON.parse(event.data));
+
+//       if ('error' in message) {
+//         if (message.error === 'Unauthorized')
+//           setError('Unauthorized. Please try sign out and sign in again');
+//         else setError(message.error);
+//       }
+
+//       if ('type' in message) setIsReady(message.type === 'ready');
+
+//       if ('message' in message)
+//         setMessagesHistory((prev) => [
+//           ...prev,
+//           { message: message.message, sender: false },
+//         ]);
+//     },
+//     reconnectInterval(attemptNumber) {
+//       return Math.min(Math.pow(2, attemptNumber) * 1000, 30_000);
+//     },
+//   });
+
+//   useEffect(() => {
+//     if (!accessToken || isReady || readyState !== ReadyState.OPEN) return;
+
+//     sendMessage(JSON.stringify({ token: accessToken }), false);
+//   }, [sendMessage, accessToken, isReady, readyState]);
+
+//   const send = useCallback(
+//     (input: EchoMessageInput) => {
+//       sendMessage(JSON.stringify(input));
+//     },
+//     [sendMessage],
+//   );
+
+//   const clear = useCallback(() => {
+//     setMessagesHistory([]);
+//     setError(null);
+//   }, []);
+
+//   return { messagesHistory, error, readyState, send, isReady, clear };
+// }
+
+// export default useEchoWS;

@@ -1,4 +1,5 @@
 import { useAuth } from '@/features/auth/providers/AuthProvider';
+import { handleApiError } from '@/lib/errors';
 import { UnauthenticatedError } from '@/lib/exceptions';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
@@ -12,8 +13,15 @@ function useCreateTaskMutation() {
   return useMutation({
     mutationKey: ['task', 'create'],
     mutationFn: createTask,
+    retry(failureCount, error) {
+      const err = handleApiError(error);
+      if (import.meta.env.MODE === 'test') return false;
+      if (err.type === 'http' && err.status < 500) return false;
+      if (failureCount > 3) return false;
+
+      return true;
+    },
     onError(error) {
-      if (axios.isAxiosError(error)) console.log(error.response?.data);
       if (
         error instanceof UnauthenticatedError ||
         (axios.isAxiosError(error) && error.status === 401)

@@ -1,18 +1,13 @@
 import { demoTasks } from '@/data/demo';
 import { ACCESS_TOKEN_STORAGE_KEY } from '@/features/auth/constants';
 import { render, screen, waitFor } from '@/lib/testing-library';
+import { mockJsonResponse } from '@/mocks/helpers';
 import { server } from '@/mocks/setup/node';
 import { userEvent } from '@testing-library/user-event';
-import { delay, http, HttpResponse, type JsonBodyType } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import TasksList from '.';
 import type { getTasks } from '../../services/tasks.service';
-
-function mockJsonResponse<
-  T extends () => Promise<JsonBodyType>,
-  E extends JsonBodyType = Awaited<ReturnType<T>>,
->(mockedData: E) {
-  return HttpResponse.json<E>(mockedData);
-}
+import type { TaskModel } from '../../types';
 
 beforeEach(() => {
   vi.useRealTimers();
@@ -24,37 +19,53 @@ beforeAll(() => {
   return () => localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
 });
 
-test('should shows loading skeleton while loading tasks', async () => {
-  server.use(
-    http.get(`/api/tasks`, async () => {
-      await delay();
-      return mockJsonResponse<typeof getTasks>(demoTasks);
-    }),
-  );
+describe('loading', () => {
+  test('should shows loading skeleton while loading tasks', async () => {
+    server.use(
+      http.get(`/api/tasks`, async () => {
+        await delay();
+        return mockJsonResponse<typeof getTasks>(demoTasks);
+      }),
+    );
 
-  render(<TasksList />);
+    render(<TasksList />);
 
-  const taskSkeletonItems = await screen.findAllByRole('presentation', {
-    busy: true,
+    const taskSkeletonItems = await screen.findAllByRole('presentation', {
+      busy: true,
+    });
+
+    expect(taskSkeletonItems.length).toBeGreaterThanOrEqual(1);
   });
-
-  expect(taskSkeletonItems.length).toBeGreaterThanOrEqual(1);
 });
 
-test('should shows error when failed to load tasks', async () => {
-  server.use(
-    http.get(`/api/tasks`, async () => {
-      return new HttpResponse(null, { status: 500 });
-    }),
-  );
+describe('error handling', () => {
+  test('should shows error message when failed to load tasks', async () => {
+    server.use(
+      http.get(`/api/tasks`, async () => {
+        return HttpResponse.json({}, { status: 400 });
+      }),
+    );
 
-  vi.useFakeTimers();
+    render(<TasksList />);
 
-  render(<TasksList />);
+    await waitFor(() =>
+      expect(screen.queryByText(/failed to load tasks/i)).toBeInTheDocument(),
+    );
+  });
 
-  await vi.runAllTimersAsync();
+  test('should shows server error message when server is unavailable', async () => {
+    server.use(
+      http.get(`/api/tasks`, async () => {
+        return HttpResponse.json({}, { status: 500 });
+      }),
+    );
 
-  expect(screen.getByText(/failed to load tasks/i)).toBeInTheDocument();
+    render(<TasksList />);
+
+    await waitFor(() =>
+      expect(screen.queryByText(/server is unavailable/i)).toBeInTheDocument(),
+    );
+  });
 });
 
 test('should shows all tasks by default and when all tasks tab is selected', async () => {
@@ -71,230 +82,384 @@ test('should shows all tasks by default and when all tasks tab is selected', asy
   expect(taskItems).toHaveLength(demoTasks.length);
 });
 
-test('should only shows active tasks when active tab is selected', async () => {
-  server.use(
-    http.get(`/api/tasks`, ({ request }) => {
-      const reqURL = new URL(request.url);
-      const completed = reqURL.searchParams.get('completed');
-
-      const tasks = demoTasks.filter((task) => {
-        if (completed)
-          return (
-            (completed === 'true' && task.completed) ||
-            (completed === 'false' && !task.completed)
-          );
-        return task;
-      });
-
-      return mockJsonResponse<typeof getTasks>(tasks);
-    }),
-  );
-
-  const user = userEvent.setup();
-
-  render(<TasksList />);
-
-  const activeTab = await waitFor(() => {
-    const el = screen.getByRole('tab', { name: /active/i });
-    expect(el).toBeEnabled();
-    return el;
-  });
-
-  await user.click(activeTab);
-
-  const taskItems = await screen.findAllByRole('listitem');
-
-  expect(taskItems).toHaveLength(
-    demoTasks.filter((task) => !task.completed).length,
-  );
-});
-
-test('should only shows completed tasks when completed tab is selected', async () => {
-  server.use(
-    http.get(`/api/tasks`, ({ request }) => {
-      const reqURL = new URL(request.url);
-      const completed = reqURL.searchParams.get('completed');
-
-      const tasks = demoTasks.filter((task) => {
-        if (completed)
-          return (
-            (completed === 'true' && task.completed) ||
-            (completed === 'false' && !task.completed)
-          );
-        return task;
-      });
-
-      return mockJsonResponse<typeof getTasks>(tasks);
-    }),
-  );
-
-  const user = userEvent.setup();
-
-  render(<TasksList />);
-
-  const completedTab = await waitFor(() => {
-    const el = screen.getByRole('tab', { name: /completed/i });
-    expect(el).toBeEnabled();
-    return el;
-  });
-
-  await user.click(completedTab);
-
-  const taskItems = await screen.findAllByRole('listitem');
-
-  expect(taskItems).toHaveLength(
-    demoTasks.filter((task) => task.completed).length,
-  );
-});
-
-test('should sort tasks by created at date in ascending', async () => {
+test('should shows empty tasks message when no tasks exists yet', async () => {
   server.use(
     http.get(`/api/tasks`, () => {
-      return mockJsonResponse<typeof getTasks>(demoTasks);
+      return mockJsonResponse<typeof getTasks>([]);
     }),
   );
 
-  const user = userEvent.setup();
-
   render(<TasksList />);
 
-  const sortedTasks = demoTasks.toSorted(
-    (a, b) => a.created_at.getTime() - b.created_at.getTime(),
+  await waitFor(() =>
+    expect(
+      screen.queryAllByRole('presentation', {
+        busy: true,
+      }),
+    ).toHaveLength(0),
   );
 
-  const sortButton = await waitFor(() => {
-    const el = screen.getByRole('button', { name: /sort/i });
-    expect(el).toBeEnabled();
-    return el;
-  });
-
-  await user.click(sortButton);
-
-  const sortMenu = await screen.findByRole('menu');
-
-  expect(sortMenu).toBeInTheDocument();
-
-  await user.click(screen.getByRole('menuitemradio', { name: /created/i }));
-  await user.click(screen.getByRole('menuitemradio', { name: /ascending/i }));
-
-  const tasks = screen.queryAllByRole('listitem');
-
-  expect(tasks[0]).toHaveAccessibleName(sortedTasks[0].title);
-  expect(tasks[tasks.length - 1]).toHaveAccessibleName(
-    sortedTasks[sortedTasks.length - 1].title,
+  await waitFor(() =>
+    expect(screen.queryByText(/no tasks yet/i)).toBeInTheDocument(),
   );
 });
 
-test('should sort tasks by created at date in descending', async () => {
-  server.use(
-    http.get(`/api/tasks`, () => {
-      return mockJsonResponse<typeof getTasks>(demoTasks);
-    }),
-  );
+describe('filtering', () => {
+  test('should only shows tasks that includes searched query', async () => {
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return mockJsonResponse<typeof getTasks>(demoTasks);
+      }),
+    );
 
-  const user = userEvent.setup();
+    const user = userEvent.setup();
 
-  render(<TasksList />);
+    render(<TasksList />);
 
-  const sortedTasks = demoTasks.toSorted(
-    (a, b) => a.created_at.getTime() - b.created_at.getTime(),
-  );
+    const searchInput = screen.getByPlaceholderText(/search tasks/i);
 
-  const sortButton = await waitFor(() => {
-    const el = screen.getByRole('button', { name: /sort/i });
-    expect(el).toBeEnabled();
-    return el;
+    await waitFor(() => expect(searchInput).toBeEnabled());
+
+    const searchTerm = demoTasks[0]?.title ?? '';
+
+    const filteredTasks = demoTasks.filter((task) =>
+      [task.title, task.description].some((text) => text.includes(searchTerm)),
+    );
+
+    server.resetHandlers();
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return mockJsonResponse<typeof getTasks>(filteredTasks);
+      }),
+    );
+
+    await user.type(searchInput, searchTerm);
+
+    await waitFor(() =>
+      expect(screen.queryAllByRole('listitem')).toHaveLength(0),
+    );
+
+    const taskItems = await screen.findAllByRole('listitem');
+
+    expect(taskItems).toHaveLength(filteredTasks.length);
   });
 
-  await user.click(sortButton);
+  test('should shows not found message when searching query', async () => {
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return mockJsonResponse<typeof getTasks>(demoTasks);
+      }),
+    );
 
-  const sortMenu = await screen.findByRole('menu');
+    const user = userEvent.setup();
 
-  expect(sortMenu).toBeInTheDocument();
+    render(<TasksList />);
 
-  await user.click(screen.getByRole('menuitemradio', { name: /created/i }));
-  await user.click(screen.getByRole('menuitemradio', { name: /descending/i }));
+    const searchInput = screen.getByPlaceholderText(/search tasks/i);
 
-  const tasks = screen.queryAllByRole('listitem');
+    await waitFor(() => expect(searchInput).toBeEnabled());
 
-  expect(tasks[0]).toHaveAccessibleName(
-    sortedTasks[sortedTasks.length - 1].title,
-  );
-  expect(tasks[tasks.length - 1]).toHaveAccessibleName(sortedTasks[0].title);
-});
+    server.resetHandlers();
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return mockJsonResponse<typeof getTasks>([]);
+      }),
+    );
 
-test('should sort tasks by updated at date in ascending', async () => {
-  server.use(
-    http.get(`/api/tasks`, () => {
-      return mockJsonResponse<typeof getTasks>(demoTasks);
-    }),
-  );
+    await user.type(searchInput, 'something');
 
-  const user = userEvent.setup();
-
-  render(<TasksList />);
-
-  const sortedTasks = demoTasks.toSorted(
-    (a, b) => a.updated_at.getTime() - b.updated_at.getTime(),
-  );
-
-  const sortButton = await waitFor(() => {
-    const el = screen.getByRole('button', { name: /sort/i });
-    expect(el).toBeEnabled();
-    return el;
+    await waitFor(() =>
+      expect(screen.getByText(/^no tasks found$/i)).toBeInTheDocument(),
+    );
   });
 
-  await user.click(sortButton);
+  test('should only shows active tasks when active tab is selected', async () => {
+    server.use(
+      http.get(`/api/tasks`, ({ request }) => {
+        const reqURL = new URL(request.url);
+        const completed = reqURL.searchParams.get('completed');
 
-  const sortMenu = await screen.findByRole('menu');
+        const tasks = demoTasks.filter((task) => {
+          if (completed)
+            return (
+              (completed === 'true' && task.completed) ||
+              (completed === 'false' && !task.completed)
+            );
+          return task;
+        });
 
-  expect(sortMenu).toBeInTheDocument();
+        return mockJsonResponse<typeof getTasks>(tasks);
+      }),
+    );
 
-  await user.click(screen.getByRole('menuitemradio', { name: /created/i }));
-  await user.click(screen.getByRole('menuitemradio', { name: /ascending/i }));
+    const user = userEvent.setup();
 
-  const tasks = screen.queryAllByRole('listitem');
+    render(<TasksList />);
 
-  expect(tasks[0]).toHaveAccessibleName(sortedTasks[0].title);
-  expect(tasks[tasks.length - 1]).toHaveAccessibleName(
-    sortedTasks[sortedTasks.length - 1].title,
-  );
-});
+    const activeTab = await waitFor(() => {
+      const el = screen.getByRole('tab', { name: /active/i });
+      expect(el).toBeEnabled();
+      return el;
+    });
 
-test('should sort tasks by updated at date in descending', async () => {
-  server.use(
-    http.get(`/api/tasks`, () => {
-      return mockJsonResponse<typeof getTasks>(demoTasks);
-    }),
-  );
+    await user.click(activeTab);
 
-  const user = userEvent.setup();
+    const taskItems = await screen.findAllByRole('listitem');
 
-  render(<TasksList />);
-
-  const sortedTasks = demoTasks.toSorted(
-    (a, b) => a.updated_at.getTime() - b.updated_at.getTime(),
-  );
-
-  const sortButton = await waitFor(() => {
-    const el = screen.getByRole('button', { name: /sort/i });
-    expect(el).toBeEnabled();
-    return el;
+    expect(taskItems).toHaveLength(
+      demoTasks.filter((task) => !task.completed).length,
+    );
   });
 
-  await user.click(sortButton);
+  test('should shows no tasks message when active tab is selected and no active tasks exists', async () => {
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return HttpResponse.json<TaskModel[]>(demoTasks);
+      }),
+    );
 
-  const sortMenu = await screen.findByRole('menu');
+    const user = userEvent.setup();
 
-  expect(sortMenu).toBeInTheDocument();
+    render(<TasksList />);
 
-  await user.click(screen.getByRole('menuitemradio', { name: /created/i }));
-  await user.click(screen.getByRole('menuitemradio', { name: /descending/i }));
+    const activeTab = screen.getByRole('tab', { name: /active/i });
 
-  const tasks = screen.queryAllByRole('listitem');
+    await waitFor(() => expect(activeTab).toBeEnabled());
 
-  expect(tasks[0]).toHaveAccessibleName(
-    sortedTasks[sortedTasks.length - 1].title,
-  );
-  expect(tasks[tasks.length - 1]).toHaveAccessibleName(sortedTasks[0].title);
+    server.resetHandlers();
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return HttpResponse.json<TaskModel[]>([]);
+      }),
+    );
+
+    await user.click(activeTab);
+
+    await waitFor(() =>
+      expect(screen.queryByText(/^no tasks found$/i)).toBeInTheDocument(),
+    );
+  });
+
+  test('should only shows completed tasks when completed tab is selected', async () => {
+    server.use(
+      http.get(`/api/tasks`, ({ request }) => {
+        const reqURL = new URL(request.url);
+        const completed = reqURL.searchParams.get('completed');
+
+        const tasks = demoTasks.filter((task) => {
+          if (completed)
+            return (
+              (completed === 'true' && task.completed) ||
+              (completed === 'false' && !task.completed)
+            );
+          return task;
+        });
+
+        return mockJsonResponse<typeof getTasks>(tasks);
+      }),
+    );
+
+    const user = userEvent.setup();
+
+    render(<TasksList />);
+
+    const completedTab = await waitFor(() => {
+      const el = screen.getByRole('tab', { name: /completed/i });
+      expect(el).toBeEnabled();
+      return el;
+    });
+
+    await user.click(completedTab);
+
+    const taskItems = await screen.findAllByRole('listitem');
+
+    expect(taskItems).toHaveLength(
+      demoTasks.filter((task) => task.completed).length,
+    );
+  });
+
+  test('should shows no tasks message when completed tab is selected and no completed tasks exists', async () => {
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return HttpResponse.json<TaskModel[]>(demoTasks);
+      }),
+    );
+
+    const user = userEvent.setup();
+
+    render(<TasksList />);
+
+    const completedTab = screen.getByRole('tab', { name: /completed/i });
+
+    await waitFor(() => expect(completedTab).toBeEnabled());
+
+    server.resetHandlers();
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return HttpResponse.json<TaskModel[]>([]);
+      }),
+    );
+
+    await user.click(completedTab);
+
+    await waitFor(() =>
+      expect(screen.queryByText(/^no tasks found$/i)).toBeInTheDocument(),
+    );
+  });
+
+  test('should sort tasks by created at date in ascending', async () => {
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return mockJsonResponse<typeof getTasks>(demoTasks);
+      }),
+    );
+
+    const user = userEvent.setup();
+
+    render(<TasksList />);
+
+    const sortedTasks = demoTasks.toSorted(
+      (a, b) => a.created_at.getTime() - b.created_at.getTime(),
+    );
+
+    const sortButton = await waitFor(() => {
+      const el = screen.getByRole('button', { name: /sort/i });
+      expect(el).toBeEnabled();
+      return el;
+    });
+
+    await user.click(sortButton);
+
+    const sortMenu = await screen.findByRole('menu');
+
+    expect(sortMenu).toBeInTheDocument();
+
+    await user.click(screen.getByRole('menuitemradio', { name: /created/i }));
+    await user.click(screen.getByRole('menuitemradio', { name: /ascending/i }));
+
+    const tasks = screen.queryAllByRole('listitem');
+
+    expect(tasks[0]).toHaveAccessibleName(sortedTasks[0].title);
+    expect(tasks[tasks.length - 1]).toHaveAccessibleName(
+      sortedTasks[sortedTasks.length - 1].title,
+    );
+  });
+
+  test('should sort tasks by created at date in descending', async () => {
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return mockJsonResponse<typeof getTasks>(demoTasks);
+      }),
+    );
+
+    const user = userEvent.setup();
+
+    render(<TasksList />);
+
+    const sortedTasks = demoTasks.toSorted(
+      (a, b) => a.created_at.getTime() - b.created_at.getTime(),
+    );
+
+    const sortButton = await waitFor(() => {
+      const el = screen.getByRole('button', { name: /sort/i });
+      expect(el).toBeEnabled();
+      return el;
+    });
+
+    await user.click(sortButton);
+
+    const sortMenu = await screen.findByRole('menu');
+
+    expect(sortMenu).toBeInTheDocument();
+
+    await user.click(screen.getByRole('menuitemradio', { name: /created/i }));
+    await user.click(
+      screen.getByRole('menuitemradio', { name: /descending/i }),
+    );
+
+    const tasks = screen.queryAllByRole('listitem');
+
+    expect(tasks[0]).toHaveAccessibleName(
+      sortedTasks[sortedTasks.length - 1].title,
+    );
+    expect(tasks[tasks.length - 1]).toHaveAccessibleName(sortedTasks[0].title);
+  });
+
+  test('should sort tasks by updated at date in ascending', async () => {
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return mockJsonResponse<typeof getTasks>(demoTasks);
+      }),
+    );
+
+    const user = userEvent.setup();
+
+    render(<TasksList />);
+
+    const sortedTasks = demoTasks.toSorted(
+      (a, b) => a.updated_at.getTime() - b.updated_at.getTime(),
+    );
+
+    const sortButton = await waitFor(() => {
+      const el = screen.getByRole('button', { name: /sort/i });
+      expect(el).toBeEnabled();
+      return el;
+    });
+
+    await user.click(sortButton);
+
+    const sortMenu = await screen.findByRole('menu');
+
+    expect(sortMenu).toBeInTheDocument();
+
+    await user.click(screen.getByRole('menuitemradio', { name: /created/i }));
+    await user.click(screen.getByRole('menuitemradio', { name: /ascending/i }));
+
+    const tasks = screen.queryAllByRole('listitem');
+
+    expect(tasks[0]).toHaveAccessibleName(sortedTasks[0].title);
+    expect(tasks[tasks.length - 1]).toHaveAccessibleName(
+      sortedTasks[sortedTasks.length - 1].title,
+    );
+  });
+
+  test('should sort tasks by updated at date in descending', async () => {
+    server.use(
+      http.get(`/api/tasks`, () => {
+        return mockJsonResponse<typeof getTasks>(demoTasks);
+      }),
+    );
+
+    const user = userEvent.setup();
+
+    render(<TasksList />);
+
+    const sortedTasks = demoTasks.toSorted(
+      (a, b) => a.updated_at.getTime() - b.updated_at.getTime(),
+    );
+
+    const sortButton = await waitFor(() => {
+      const el = screen.getByRole('button', { name: /sort/i });
+      expect(el).toBeEnabled();
+      return el;
+    });
+
+    await user.click(sortButton);
+
+    const sortMenu = await screen.findByRole('menu');
+
+    expect(sortMenu).toBeInTheDocument();
+
+    await user.click(screen.getByRole('menuitemradio', { name: /created/i }));
+    await user.click(
+      screen.getByRole('menuitemradio', { name: /descending/i }),
+    );
+
+    const tasks = screen.queryAllByRole('listitem');
+
+    expect(tasks[0]).toHaveAccessibleName(
+      sortedTasks[sortedTasks.length - 1].title,
+    );
+    expect(tasks[tasks.length - 1]).toHaveAccessibleName(sortedTasks[0].title);
+  });
 });

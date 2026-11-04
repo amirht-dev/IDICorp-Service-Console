@@ -8,11 +8,11 @@ import {
   DetailCardMedia,
   DetailCardTitle,
 } from '@/components/ui/DetailCard';
+import { ReadyState } from '@/hooks/useWebSocket';
 import { env } from '@/lib/env';
 import { TriangleAlertIcon } from 'lucide-react';
 import useCalculateWS from '../../hooks/useCalculateWS';
 import CalculatorForm from '../CalculatorForm';
-import { ReadyState } from 'react-use-websocket';
 
 const CalculatorPage = () => {
   const { result, error, readyState, calculate, isReady, clear } =

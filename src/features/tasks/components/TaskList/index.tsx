@@ -1,29 +1,20 @@
 import Count from '@/components/helpers/Count';
-import { Button } from '@/components/ui/Button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/DropdownMenu';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { ListSortAscendingIcon, ListSortDescendingIcon } from 'lucide-react';
 import { useState } from 'react';
-import { statusTabs, type StatusTabs } from '../../constants';
+import { type StatusTabs } from '../../constants';
 import useTasksQuery from '../../hooks/useTasksQuery';
 import EmptyTasksCard from '../EmptyTasksCard';
 import FailedLoadTasksCard from '../FailedLoadTasksCard';
 import SearchInput from '../SearchInput';
 import { TaskCard, TaskCardSkeleton } from '../TaskCard';
+import type { DateSort, SortOrder } from './index.types';
+import SortDropdown from './SortDropdown';
+import StatusFilterTabs from './StatusFilterTabs';
 
 function TasksList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusTab, setStatusTab] = useState<StatusTabs>('all');
-  const [dateSort, setDateSort] = useState<'created' | 'updated' | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'dsc' | null>(null);
+  const [dateSort, setDateSort] = useState<DateSort | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder | null>(null);
   const query = useTasksQuery(
     {
       completed:
@@ -59,100 +50,59 @@ function TasksList() {
   const isDisabled = query.isLoading || query.isError;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col">
       <SearchInput
         className="max-w-md"
         onDebounceChange={setSearchTerm}
         disabled={isDisabled}
       />
-      <Tabs value={statusTab} onValueChange={setStatusTab}>
-        <div className="flex items-center justify-between">
-          <TabsList aria-disabled={isDisabled}>
-            {Object.values(statusTabs).map((item) => (
-              <TabsTrigger
-                value={item.value}
-                key={item.value}
-                disabled={isDisabled}
-              >
-                {item.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      <div className="flex items-center justify-between mt-6">
+        <StatusFilterTabs
+          disabled={isDisabled}
+          value={statusTab}
+          onValueChange={setStatusTab}
+        />
 
-          <div className="flex gap-2">
-            <DropdownMenu disabled={isDisabled}>
-              <DropdownMenuTrigger
-                render={<Button variant="outline">Sort</Button>}
-              />
-              <DropdownMenuContent className="min-w-[160px]" align="end">
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>By Date</DropdownMenuLabel>
-                  <DropdownMenuRadioGroup
-                    value={dateSort}
-                    onValueChange={setDateSort}
-                  >
-                    <DropdownMenuRadioItem value="created">
-                      Date Created
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="updated">
-                      Date Updated
-                    </DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuGroup>
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>Sort Order</DropdownMenuLabel>
-                  <DropdownMenuRadioGroup
-                    value={sortOrder}
-                    onValueChange={setSortOrder}
-                    disabled={dateSort === null}
-                  >
-                    <DropdownMenuRadioItem value="asc">
-                      <ListSortAscendingIcon />
-                      Ascending
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="dsc">
-                      <ListSortDescendingIcon />
-                      Descending
-                    </DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+        <SortDropdown
+          disabled={isDisabled}
+          dateSort={dateSort}
+          onDateSortChange={setDateSort}
+          sortOrder={sortOrder}
+          onSortOrderChange={setSortOrder}
+        />
+      </div>
 
-        <div className="flex flex-col gap-1">
-          {query.isLoading ? (
-            <Count count={4} render={(idx) => <TaskCardSkeleton key={idx} />} />
-          ) : query.isError ? (
-            <FailedLoadTasksCard message={query.error.message} />
-          ) : query.isSuccess ? (
-            query.data.length ? (
-              query.data.map((task) => <TaskCard key={task.id} task={task} />)
-            ) : (
-              <EmptyTasksCard
-                type={isFiltering ? 'filter' : 'all'}
-                kind={
-                  isFiltering
-                    ? hasSearchTerm
-                      ? 'search'
-                      : 'status'
-                    : undefined
-                }
-                value={
-                  isFiltering
-                    ? hasSearchTerm
-                      ? searchTerm
-                      : statusTab
-                    : undefined
-                }
-              />
-            )
-          ) : null}
-        </div>
-      </Tabs>
+      <div className="flex flex-col gap-1 mt-2">
+        {query.isLoading ? (
+          <TasksSkeletonList />
+        ) : query.isError ? (
+          <FailedLoadTasksCard error={query.error} />
+        ) : query.isSuccess ? (
+          query.data.length ? (
+            query.data.map((task) => <TaskCard key={task.id} task={task} />)
+          ) : (
+            <EmptyTasksCard
+              type={isFiltering ? 'filter' : 'all'}
+              kind={
+                isFiltering ? (hasSearchTerm ? 'search' : 'status') : undefined
+              }
+              value={
+                isFiltering
+                  ? hasSearchTerm
+                    ? searchTerm
+                    : statusTab
+                  : undefined
+              }
+            />
+          )
+        ) : null}
+      </div>
     </div>
   );
+}
+
+function TasksSkeletonList() {
+  return <Count count={4} render={(idx) => <TaskCardSkeleton key={idx} />} />;
 }
 
 export default TasksList;

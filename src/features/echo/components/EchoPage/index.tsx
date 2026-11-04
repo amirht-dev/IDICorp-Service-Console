@@ -4,14 +4,17 @@ import { Badge } from '@/components/ui/Badge';
 import { Card, CardContent } from '@/components/ui/Card';
 import ConnectionCard from '@/components/ui/ConnectionCard';
 import { DEMO_MESSAGES_HISTORY } from '@/data/demo';
+import { ReadyState } from '@/hooks/useWebSocket';
 import { env } from '@/lib/env';
-import { ReadyState } from 'react-use-websocket';
 import useEchoWS from '../../hooks/useEchoWS';
 import EchoMessageForm from '../EchoMessageForm';
 import EchoMessagesList from '../EchoMessagesList';
 
 const EchoPage = () => {
-  const { isReady, readyState, send, error } = useEchoWS();
+  const { isReady, readyState, send, error, messagesHistory } = useEchoWS();
+
+  const isDemo =
+    readyState !== ReadyState.OPEN && import.meta.env.MODE !== 'test';
 
   return (
     <div>
@@ -21,27 +24,38 @@ const EchoPage = () => {
       </PageHeading>
 
       <div className="flex flex-col gap-10">
-        <AlertBox>
-          Currently, the{' '}
-          <b className="select-all underline">{env.VITE_ECHO_WS_URL}</b>{' '}
-          WebSocket service is down due to some issues; therefore, I am using
-          demo data to display this page.
-        </AlertBox>
+        {isDemo && (
+          <AlertBox>
+            Currently, the{' '}
+            <b className="select-all underline">{env.VITE_ECHO_WS_URL}</b>{' '}
+            WebSocket service is down due to some issues; therefore, I am using
+            demo data to display this page.
+          </AlertBox>
+        )}
 
         <ConnectionCard readyState={readyState} url={env.VITE_ECHO_WS_URL} />
 
-        <EchoMessageForm
-          onSend={send}
-          disabled={readyState !== ReadyState.OPEN}
-        />
-
-        {error && (
+        {error && error.type === 'unauthorized' ? (
           <Card className="text-sm bg-error/10 text-error border-error">
-            <CardContent>{error}</CardContent>
+            <CardContent>
+              Unauthorized. Please try sign out and sign in again
+            </CardContent>
           </Card>
-        )}
+        ) : (
+          <>
+            <EchoMessageForm
+              onSend={send}
+              disabled={readyState !== ReadyState.OPEN}
+              error={
+                error?.type !== 'unauthorized' ? error?.message : undefined
+              }
+            />
 
-        <EchoMessagesList messages={DEMO_MESSAGES_HISTORY} />
+            <EchoMessagesList
+              messages={isDemo ? DEMO_MESSAGES_HISTORY : messagesHistory}
+            />
+          </>
+        )}
       </div>
     </div>
   );

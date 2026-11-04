@@ -4,6 +4,7 @@ import { UnauthenticatedError } from './exceptions';
 
 export const baseApi = axios.create({
   baseURL: '/api',
+  timeout: 10_000,
 });
 
 export function getAuthApi() {

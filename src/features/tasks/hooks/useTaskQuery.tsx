@@ -21,12 +21,13 @@ export const getTaskQueryOptions = (
   queryOptions({
     ...options,
     queryKey: ['task', String(id)],
-    queryFn: () => getTask(id),
+    queryFn: ({ signal }) => getTask({ id }, { signal }),
     retry(failureCount, error) {
+      if (import.meta.env.MODE === 'test') return false;
       if (axios.isAxiosError(error)) {
         if (error.status === 401 || error.status === 404) return false;
       }
-      if (failureCount > 10) return false;
+      if (failureCount > 3) return false;
 
       return true;
     },

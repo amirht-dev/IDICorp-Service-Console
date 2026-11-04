@@ -1,12 +1,12 @@
 import { readAccessToken } from '@/features/auth/helpers';
-import { UnauthenticatedError } from '@/lib/exceptions';
+import { AuthenticationError, HTTPError, NetworkError } from '../errors';
 
 export async function textStreaming(
   content: string,
   onChunk: (chunk: string) => void,
 ) {
   const accessToken = readAccessToken();
-  if (!accessToken) throw new UnauthenticatedError();
+  if (!accessToken) throw new AuthenticationError();
 
   const headers = new Headers();
 
@@ -14,16 +14,20 @@ export async function textStreaming(
   headers.set('Content-Type', 'text/plain; charset=utf-8');
   headers.set('Accept', 'text/plain');
 
-  const res = await fetch('/api/echo/stream', {
-    credentials: 'include',
-    method: 'POST',
-    headers,
-    body: content,
-  });
+  let res;
 
-  if (res.status === 401) throw new UnauthenticatedError();
+  try {
+    res = await fetch('/api/echo/stream', {
+      credentials: 'include',
+      method: 'POST',
+      headers,
+      body: content,
+    });
+  } catch (error) {
+    throw new NetworkError('', { cause: error });
+  }
 
-  if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+  if (!res.ok) throw HTTPError.fromResponse(res);
 
   if (!res.body) throw new Error('Streaming is not supported by this response');
 
@@ -43,6 +47,8 @@ export async function textStreaming(
 
       if (remaining) onChunk(remaining);
     }
+  } catch (error) {
+    throw new Error('Failed to read stream.', { cause: error });
   } finally {
     reader.releaseLock();
   }

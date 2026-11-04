@@ -20,19 +20,21 @@ import {
 } from '@/components/ui/Field';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
+import { handleApiError } from '@/lib/errors';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
 import { useState, type ReactElement } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import type { Arrayable } from 'type-fest';
 import useCreateTaskMutation from '../../hooks/useCreateTaskMutation';
 import { createTaskInputSchema } from '../../schemas';
+import type { TaskModel } from '../../types';
 
 type CreateTaskDialogProps = {
-  trigger: Arrayable<ReactElement>;
+  trigger?: Arrayable<ReactElement>;
+  onCreateTask?: (task: TaskModel) => void;
 };
 
-const CreateTaskDialog = ({ trigger }: CreateTaskDialogProps) => {
+const CreateTaskDialog = ({ trigger, onCreateTask }: CreateTaskDialogProps) => {
   const [open, setOpen] = useState(false);
   const mutation = useCreateTaskMutation();
   const { control, handleSubmit, reset, formState, setError } = useForm({
@@ -48,19 +50,31 @@ const CreateTaskDialog = ({ trigger }: CreateTaskDialogProps) => {
   const { disabled, isSubmitting, isSubmitted, isValid, errors } = formState;
 
   const submitHandler = handleSubmit(async (data) => {
-    await mutation.mutateAsync(data, {
+    mutation.mutate(data, {
       onError(error) {
-        if (axios.isAxiosError(error)) {
-          if (error.status === 422)
-            console.error('validation error', error.response?.data);
-          if (error.status === 503)
-            setError('root', {
-              message: 'something wrong happened. try again later',
-            });
-        }
+        const err = handleApiError(error);
+        let message: string;
+        if (err.type === 'network') {
+          message = 'Unable to connect to server. Please try again.';
+        } else if (err.type === 'timeout') {
+          message =
+            'Server did not respond within allotted time. Please try again.';
+        } else if (err.type === 'cancelled') {
+          message = 'Creating task was cancelled. please try again';
+        } else if (err.type === 'http') {
+          if (err.status === 422)
+            message = 'Server validation error. See console for more details.';
+          else if (err.status >= 500)
+            message =
+              'Failed to create task. Server is unavailable right now. Please try again later.';
+          else message = 'Failed to create task.';
+        } else message = 'Unknown error occurred when creating task.';
+
+        setError('root', { message });
       },
-      onSuccess() {
+      onSuccess(task) {
         reset();
+        onCreateTask?.(task);
         setOpen(false);
       },
     });
@@ -143,11 +157,11 @@ const CreateTaskDialog = ({ trigger }: CreateTaskDialogProps) => {
                       data-invalid={fieldState.invalid}
                     >
                       <Checkbox
-                        id="task-completed"
                         aria-invalid={fieldState.invalid}
                         {...restField}
                         checked={value}
                         onCheckedChange={(checked) => onChange(checked)}
+                        id="task-completed"
                       />
                       <FieldLabel htmlFor="task-completed">
                         Completed

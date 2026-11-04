@@ -1,16 +1,16 @@
 import { getAuthApi } from '@/lib/axios';
-import type { Schema } from 'type-fest';
+import { z } from 'zod/v4';
+import { tasksFiltersParamsSchema } from '../schemas';
 import type { TaskQueryFilter, TaskResponseModel } from '../types';
 
 export async function getTasks(filters: TaskQueryFilter = {}) {
-  const params: Schema<TaskQueryFilter, string> = {};
+  const parsedFilterParams = tasksFiltersParamsSchema.safeParse(filters);
 
-  if (filters.q !== undefined) params.q = String(filters.q);
-  if (filters.completed !== undefined)
-    params.completed = String(filters.completed);
+  if (!parsedFilterParams.success)
+    console.error(z.prettifyError(parsedFilterParams.error));
 
   const tasks = await getAuthApi().get<TaskResponseModel[]>('/tasks', {
-    params,
+    params: parsedFilterParams.data,
   });
 
   return tasks.data.map((task) => ({

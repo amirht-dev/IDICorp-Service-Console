@@ -1,3 +1,4 @@
+import { pickBy } from 'lodash';
 import { z } from 'zod/v4';
 
 export const createTaskInputSchema = z.object({
@@ -10,3 +11,16 @@ export const createTaskInputSchema = z.object({
 });
 
 export const updateTaskInputSchema = createTaskInputSchema.partial();
+
+export const tasksFiltersParamsSchema = z
+  .object({
+    q: z
+      .string('Invalid q filter. q must be string')
+      .transform((value) => value || undefined)
+      .optional(),
+    completed: z
+      .boolean('Invalid completed filter. completed must be boolean')
+      .transform(String)
+      .optional(),
+  })
+  .transform((filters) => pickBy(filters, (value) => value));

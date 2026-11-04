@@ -13,6 +13,6 @@ export const demoTasks = Array(10)
   }));
 
 export const DEMO_MESSAGES_HISTORY = [
-  { sender: true, content: 'hello world' },
-  { sender: false, content: 'hello world' },
+  { sender: true, message: 'hello world' },
+  { sender: false, message: 'hello world' },
 ];
