@@ -1,4 +1,5 @@
 import { Bubble, BubbleContent } from '@/components/ui/Bubble';
+import { Card, CardTitle } from '@/components/ui/Card';
 import {
   DetailCard,
   DetailCardDescription,
@@ -18,12 +19,12 @@ type EchoMessagesListProps = {
 
 const EchoMessagesList = ({ messages }: EchoMessagesListProps) => {
   return (
-    <div className="flex w-full mx-auto flex-col p-4 rounded-lg gap-4 lg:gap-8 border">
-      <h4 className="text-xl font-medium">Messages</h4>
+    <Card className="flex flex-col gap-4 lg:gap-8">
+      <CardTitle>Messages</CardTitle>
       <Separator />
       <div className="flex flex-col gap-2">
         {!messages.length ? (
-          <EmptyTasksCard />
+          <EmptyMessagesCard />
         ) : (
           messages.map((msg, idx) => (
             <Bubble
@@ -47,7 +48,7 @@ const EchoMessagesList = ({ messages }: EchoMessagesListProps) => {
           ))
         )}
       </div>
-    </div>
+    </Card>
   );
 };
 
@@ -63,7 +64,7 @@ function IconAvatar({ className, ...props }: ComponentProps<'div'>) {
   );
 }
 
-const EmptyTasksCard = () => {
+const EmptyMessagesCard = () => {
   return (
     <DetailCard className="border border-dashed">
       <DetailCardHeader>

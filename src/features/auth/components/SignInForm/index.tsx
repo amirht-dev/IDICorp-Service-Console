@@ -1,6 +1,8 @@
 import logoIcon_image from '@/assets/images/logo-icon.webp';
+import RHFDevTool from '@/components/helpers/RHFDevTool';
+import AlertBox from '@/components/ui/AlertBox';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import {
   Field,
   FieldError,
@@ -15,7 +17,6 @@ import {
 import PasswordInput from '@/components/ui/PasswordInput';
 import { Spinner } from '@/components/ui/Spinner';
 import { handleApiError } from '@/lib/errors';
-import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRightIcon, RefreshCwIcon, UserIcon } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
@@ -112,28 +113,21 @@ const SignInForm = () => {
         </div>
 
         <form onSubmit={handleSignIn}>
-          <Card className="mb-4 bg-warning/10 border-warning text-warning">
-            <CardContent className="text-sm">
-              for sign in as test user use{' '}
-              <button
-                className="underline"
-                type="button"
-                onClick={() => {
-                  setValue('username', 'admin', {
-                    shouldValidate: true,
-                    shouldDirty: true,
-                  });
-                  setValue('password', 'admin', {
-                    shouldValidate: true,
-                    shouldDirty: true,
-                  });
-                }}
-              >
-                <b>admin</b>
-              </button>{' '}
-              for both username and password
-            </CardContent>
-          </Card>
+          <AlertBox className="mb-4">
+            for sign in as test user use{' '}
+            <button
+              className="underline"
+              type="button"
+              onClick={() => {
+                setValue('username', 'admin');
+                setValue('password', 'admin');
+              }}
+            >
+              <b>admin</b>
+            </button>{' '}
+            for both username and password
+          </AlertBox>
+
           <FieldGroup>
             {errors.root && (
               <Card
@@ -256,7 +250,7 @@ const SignInForm = () => {
         </form>
       </div>
 
-      <DevTool control={control} />
+      <RHFDevTool control={control} />
     </>
   );
 };

@@ -1,4 +1,5 @@
 import PageHeading from '@/components/shared/PageHeading';
+import AlertBox from '@/components/ui/AlertBox';
 import { Badge } from '@/components/ui/Badge';
 import { Card, CardContent } from '@/components/ui/Card';
 import ConnectionCard from '@/components/ui/ConnectionCard';
@@ -24,14 +25,12 @@ const EchoPage = () => {
 
       <div className="flex flex-col gap-10">
         {isDemo && (
-          <Card className="text-sm bg-warning/10 text-warning border-warning">
-            <CardContent>
-              Currently, the{' '}
-              <b className="select-all underline">{env.VITE_ECHO_WS_URL}</b>{' '}
-              WebSocket service is down due to some issues; therefore, I am
-              using demo data to display this page.
-            </CardContent>
-          </Card>
+          <AlertBox>
+            Currently, the{' '}
+            <b className="select-all underline">{env.VITE_ECHO_WS_URL}</b>{' '}
+            WebSocket service is down due to some issues; therefore, I am using
+            demo data to display this page.
+          </AlertBox>
         )}
 
         <ConnectionCard readyState={readyState} url={env.VITE_ECHO_WS_URL} />
@@ -47,7 +46,9 @@ const EchoPage = () => {
             <EchoMessageForm
               onSend={send}
               disabled={readyState !== ReadyState.OPEN}
-              error={error?.type === 'unknown' ? error.message : undefined}
+              error={
+                error?.type !== 'unauthorized' ? error?.message : undefined
+              }
             />
 
             <EchoMessagesList

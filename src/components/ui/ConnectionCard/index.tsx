@@ -1,5 +1,6 @@
 import { cn } from 'cn';
 import { ReadyState } from 'react-use-websocket';
+import { Card, CardContent, CardTitle } from '../Card';
 import { Separator } from '../Separator';
 
 type ConnectionCardProps = {
@@ -42,18 +43,18 @@ const readyStateMap = {
 function ConnectionCard({ url, readyState, className }: ConnectionCardProps) {
   const { dotClass, textClass, text } = readyStateMap[readyState];
   return (
-    <div className={cn('p-4 border rounded-md', className)}>
-      <h5 className="text-lg font-medium">Connection</h5>
+    <Card className={className}>
+      <CardTitle>Connection</CardTitle>
 
-      <div className="flex gap-3 mt-4 items-center">
+      <CardContent className="flex gap-3 items-center">
         <div className={'flex items-center gap-2 text-sm'}>
           <div className={cn('size-2 rounded-full', dotClass)} />
           <span className={cn(textClass)}>{text}</span>
         </div>
         <Separator orientation="vertical" />
         <span className="text-muted-foreground text-xs">{url}</span>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

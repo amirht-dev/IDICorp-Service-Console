@@ -1,3 +1,4 @@
+import RHFDevTool from '@/components/helpers/RHFDevTool';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -20,7 +21,6 @@ import {
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { handleApiError } from '@/lib/errors';
-import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type ComponentProps, type ReactElement } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -210,7 +210,7 @@ const EditTaskDialog = ({
           </form>
         </DialogContent>
       </Dialog>
-      <DevTool control={control} />
+      <RHFDevTool control={control} />
     </>
   );
 };
