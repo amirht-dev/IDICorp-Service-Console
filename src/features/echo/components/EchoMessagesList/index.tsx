@@ -1,16 +1,19 @@
 import { Bubble, BubbleContent } from '@/components/ui/Bubble';
+import {
+  DetailCard,
+  DetailCardDescription,
+  DetailCardHeader,
+  DetailCardMedia,
+  DetailCardTitle,
+} from '@/components/ui/DetailCard';
 import { Separator } from '@/components/ui/Separator';
 import { cn } from 'cn';
-import { BotIcon, UserIcon } from 'lucide-react';
+import { BotIcon, MessageSquareXIcon, UserIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
-
-type Message = {
-  content: string;
-  sender: boolean;
-};
+import type { MessageType } from '../../types';
 
 type EchoMessagesListProps = {
-  messages: Message[];
+  messages: MessageType[];
 };
 
 const EchoMessagesList = ({ messages }: EchoMessagesListProps) => {
@@ -19,26 +22,30 @@ const EchoMessagesList = ({ messages }: EchoMessagesListProps) => {
       <h4 className="text-xl font-medium">Messages</h4>
       <Separator />
       <div className="flex flex-col gap-2">
-        {messages.map((msg, idx) => (
-          <Bubble
-            align={msg.sender ? 'end' : 'start'}
-            className="flex flex-row gap-2"
-            key={idx}
-            variant={msg.sender ? 'default' : 'secondary'}
-          >
-            {!msg.sender && (
-              <IconAvatar>
-                <BotIcon />
-              </IconAvatar>
-            )}
-            <BubbleContent>{msg.content}</BubbleContent>
-            {msg.sender && (
-              <IconAvatar>
-                <UserIcon />
-              </IconAvatar>
-            )}
-          </Bubble>
-        ))}
+        {!messages.length ? (
+          <EmptyTasksCard />
+        ) : (
+          messages.map((msg, idx) => (
+            <Bubble
+              align={msg.sender ? 'end' : 'start'}
+              className="flex flex-row gap-2"
+              key={idx}
+              variant={msg.sender ? 'default' : 'secondary'}
+            >
+              {!msg.sender && (
+                <IconAvatar>
+                  <BotIcon />
+                </IconAvatar>
+              )}
+              <BubbleContent>{msg.message}</BubbleContent>
+              {msg.sender && (
+                <IconAvatar>
+                  <UserIcon />
+                </IconAvatar>
+              )}
+            </Bubble>
+          ))
+        )}
       </div>
     </div>
   );
@@ -55,5 +62,19 @@ function IconAvatar({ className, ...props }: ComponentProps<'div'>) {
     />
   );
 }
+
+const EmptyTasksCard = () => {
+  return (
+    <DetailCard className="border border-dashed">
+      <DetailCardHeader>
+        <DetailCardMedia variant="icon">
+          <MessageSquareXIcon />
+        </DetailCardMedia>
+        <DetailCardTitle>No Messages send Yet</DetailCardTitle>
+        <DetailCardDescription>Try send a new message</DetailCardDescription>
+      </DetailCardHeader>
+    </DetailCard>
+  );
+};
 
 export default EchoMessagesList;
