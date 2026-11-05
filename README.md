@@ -43,7 +43,7 @@ The application is deployed on Vercel and available at:
 | Build Tool | Vite 8 |
 | Routing | React Router 8 |
 | HTTP Client | Axios |
-| WebSocket | react-use-websocket |
+| WebSocket | WebSocket API |
 | Server State | TanStack React Query |
 | Form Management | React Hook Form |
 | Validation | Zod |
