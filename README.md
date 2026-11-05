@@ -31,6 +31,7 @@ The application is deployed on Vercel and available at:
 
 - **User Interface**
   - Responsive layouts for desktop and mobile devices.
+  - Light and dark mode support.
   - Form validation and error handling.
   - Accessible interactive components.
 
