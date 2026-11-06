@@ -6,6 +6,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
+import { handleApiError } from '@/lib/errors';
 import { cn } from 'cn';
 import {
   CircleCheckIcon,
@@ -104,6 +105,28 @@ function SwitchStatusDropdownItem({
     mutation.mutate(
       { id: task.id, input: { completed: !task.completed } },
       {
+        onError(error) {
+          const err = handleApiError(error);
+          let message: string;
+          if (err.type === 'network') {
+            message = 'Unable to connect to server. Please try again.';
+          } else if (err.type === 'timeout') {
+            message =
+              'Server did not respond within allotted time. Please try again.';
+          } else if (err.type === 'cancelled') {
+            message = 'Updating task status was cancelled. please try again';
+          } else if (err.type === 'http') {
+            if (err.status === 422)
+              message =
+                'Server validation error. See console for more details.';
+            else if (err.status >= 500)
+              message =
+                'Failed to update task status. Server is unavailable right now. Please try again later.';
+            else message = 'Failed to update task status.';
+          } else message = 'Unknown error occurred when creating task.';
+
+          console.error(message);
+        },
         onSuccess() {
           onSuccess?.();
         },

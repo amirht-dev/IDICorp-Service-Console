@@ -28,6 +28,7 @@ import type { Arrayable } from 'type-fest';
 import useCreateTaskMutation from '../../hooks/useCreateTaskMutation';
 import { createTaskInputSchema } from '../../schemas';
 import type { TaskModel } from '../../types';
+import { toast } from '@/components/ui/Toast';
 
 type CreateTaskDialogProps = {
   trigger?: Arrayable<ReactElement>;
@@ -50,6 +51,8 @@ const CreateTaskDialog = ({ trigger, onCreateTask }: CreateTaskDialogProps) => {
   const { disabled, isSubmitting, isSubmitted, isValid, errors } = formState;
 
   const submitHandler = handleSubmit(async (data) => {
+    const toastId = toast.add({ type: 'loading', title: 'Creating task...' });
+
     mutation.mutate(data, {
       onError(error) {
         const err = handleApiError(error);
@@ -70,12 +73,22 @@ const CreateTaskDialog = ({ trigger, onCreateTask }: CreateTaskDialogProps) => {
           else message = 'Failed to create task.';
         } else message = 'Unknown error occurred when creating task.';
 
+        toast.update(toastId, {
+          type: 'error',
+          title: 'Failed to create task',
+          description: message,
+        });
+
         setError('root', { message });
       },
       onSuccess(task) {
         reset();
         onCreateTask?.(task);
         setOpen(false);
+        toast.update(toastId, {
+          type: 'success',
+          title: 'Task created successfully',
+        });
       },
     });
   });

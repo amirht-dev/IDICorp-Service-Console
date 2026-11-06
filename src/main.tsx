@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import App from './App.tsx';
 
+import { Toaster } from './components/ui/Toast/index.tsx';
 import AuthProvider from './features/auth/providers/AuthProvider.tsx';
 import './index.css';
 import ThemeProvider from './providers/ThemeProvider.tsx';
@@ -18,10 +19,11 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
           <ThemeProvider>
             <App />
+            <Toaster />
           </ThemeProvider>
         </BrowserRouter>
 
-        <ReactQueryDevtools />
+        <ReactQueryDevtools buttonPosition="bottom-left" />
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,
