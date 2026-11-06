@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/InputGroup';
 import PasswordInput from '@/components/ui/PasswordInput';
 import { Spinner } from '@/components/ui/Spinner';
+import { toast } from '@/components/ui/Toast';
 import { handleApiError } from '@/lib/errors';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRightIcon, RefreshCwIcon, UserIcon } from 'lucide-react';
@@ -46,6 +47,8 @@ const SignInForm = () => {
     async ({ captcha_answer, username, password }) => {
       if (!captchaQuery.isSuccess) return;
 
+      const toastId = toast.add({ type: 'loading', title: 'Signing in...' });
+
       signInMutation.mutate(
         {
           salt: captchaQuery.data.salt,
@@ -74,9 +77,19 @@ const SignInForm = () => {
                   'ّServer is unavailable right now. Please try again later.';
             } else message = 'Something wrong happened. Please try again';
 
+            toast.update(toastId, {
+              type: 'error',
+              title: 'Failed to sign in',
+              description: message,
+            });
+
             setError('root', { message });
           },
           onSuccess() {
+            toast.update(toastId, {
+              type: 'success',
+              title: 'Signed in successfully',
+            });
             navigate('/tasks');
           },
         },

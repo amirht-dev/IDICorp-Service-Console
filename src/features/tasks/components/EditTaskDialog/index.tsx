@@ -28,6 +28,7 @@ import type { Arrayable } from 'type-fest';
 import useUpdateTaskMutation from '../../hooks/useUpdateTaskMutation';
 import { updateTaskInputSchema } from '../../schemas';
 import type { TaskModel } from '../../types';
+import { toast } from '@/components/ui/Toast';
 
 type EditTaskDialogProps = {
   task: TaskModel;
@@ -58,6 +59,8 @@ const EditTaskDialog = ({
   const { isSubmitted, isSubmitting, disabled, isValid, errors } = formState;
 
   const submitHandler = handleSubmit(async (data) => {
+    const toastId = toast.add({ type: 'loading', title: 'Creating task...' });
+
     mutation.mutate(
       { id: task.id, input: data },
       {
@@ -83,12 +86,22 @@ const EditTaskDialog = ({
             else message = 'Failed to edit task.';
           } else message = 'Unknown error occurred when editing task.';
 
+          toast.update(toastId, {
+            type: 'error',
+            title: 'Failed to Edit task',
+            description: message,
+          });
+
           setError('root', { message });
           onError?.(error);
         },
         onSuccess(data) {
           reset();
           onSuccess?.(data);
+          toast.update(toastId, {
+            type: 'success',
+            title: 'Task Edited successfully',
+          });
         },
       },
     );
