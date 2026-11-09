@@ -6,6 +6,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
+import { toast } from '@/components/ui/Toast';
 import { handleApiError } from '@/lib/errors';
 import { cn } from 'cn';
 import {
@@ -101,11 +102,21 @@ function SwitchStatusDropdownItem({
 }) {
   const mutation = useUpdateTaskMutation();
 
-  const switchStatus = async () => {
-    mutation.mutate(
-      { id: task.id, input: { completed: !task.completed } },
+  const switchStatus = () => {
+    toast.promise(
+      mutation.mutateAsync(
+        { id: task.id, input: { completed: !task.completed } },
+        {
+          onSuccess() {
+            onSuccess?.();
+          },
+        },
+      ),
       {
-        onError(error) {
+        loading: {
+          title: 'Updating task status...',
+        },
+        error(error) {
           const err = handleApiError(error);
           let message: string;
           if (err.type === 'network') {
@@ -124,11 +135,16 @@ function SwitchStatusDropdownItem({
                 'Failed to update task status. Server is unavailable right now. Please try again later.';
             else message = 'Failed to update task status.';
           } else message = 'Unknown error occurred when creating task.';
-
-          console.error(message);
+          return {
+            title: 'Failed to update task status',
+            description: message,
+          };
         },
-        onSuccess() {
+        success() {
           onSuccess?.();
+          return {
+            title: 'Task status updated successfully',
+          };
         },
       },
     );
