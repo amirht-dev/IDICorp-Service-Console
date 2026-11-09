@@ -50,6 +50,7 @@ const DeleteTaskDialog = ({
         } else if (err.type === 'http') {
           if (err.status === 422)
             message = 'Server validation error. See console for more details.';
+          else if (err.status === 404) message = 'Task not found';
           else if (err.status >= 500)
             message =
               'Failed to delete task. Server is unavailable right now. Please try again later.';

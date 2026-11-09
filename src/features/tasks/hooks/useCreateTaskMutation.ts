@@ -16,7 +16,12 @@ function useCreateTaskMutation() {
     retry(failureCount, error) {
       const err = handleApiError(error);
       if (import.meta.env.MODE === 'test') return false;
-      if (err.type === 'http' && err.status < 500) return false;
+      if (
+        err.type === 'cancelled' ||
+        err.type === 'timeout' ||
+        (err.type === 'http' && err.status < 500)
+      )
+        return false;
       if (failureCount > 3) return false;
 
       return true;

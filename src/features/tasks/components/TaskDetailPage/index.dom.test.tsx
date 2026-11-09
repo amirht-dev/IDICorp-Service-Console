@@ -107,6 +107,6 @@ test('should show error when failed to load task', async () => {
   render(<TaskDetailPage />);
 
   await waitFor(() =>
-    expect(screen.queryByText(/failed to load task/i)).toBeInTheDocument(),
+    expect(screen.queryByText(/failed to load task\./i)).toBeInTheDocument(),
   );
 });
