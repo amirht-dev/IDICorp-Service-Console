@@ -1,10 +1,10 @@
+import { handleApiError } from '@/lib/errors';
 import {
   queryOptions,
   useQuery,
   useQueryClient,
   type UseQueryOptions,
 } from '@tanstack/react-query';
-import axios from 'axios';
 import { getTask } from '../services/task.service';
 import type { TaskModel } from '../types';
 import { getTasksQueryOptions } from './useTasksQuery';
@@ -24,9 +24,13 @@ export const getTaskQueryOptions = (
     queryFn: ({ signal }) => getTask({ id }, { signal }),
     retry(failureCount, error) {
       if (import.meta.env.MODE === 'test') return false;
-      if (axios.isAxiosError(error)) {
-        if (error.status === 401 || error.status === 404) return false;
-      }
+      const err = handleApiError(error);
+      if (
+        err.type === 'cancelled' ||
+        err.type === 'timeout' ||
+        (err.type === 'http' && err.status < 500)
+      )
+        return false;
       if (failureCount > 3) return false;
 
       return true;

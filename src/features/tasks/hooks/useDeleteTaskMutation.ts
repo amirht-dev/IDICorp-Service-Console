@@ -1,4 +1,5 @@
 import { useAuth } from '@/features/auth/providers/AuthProvider';
+import { handleApiError } from '@/lib/errors';
 import { UnauthenticatedError } from '@/lib/exceptions';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
@@ -13,14 +14,24 @@ function useDeleteTaskMutation() {
   return useMutation({
     mutationKey: ['task', 'delete'],
     mutationFn: deleteTask,
+    retry(failureCount, error) {
+      const err = handleApiError(error);
+      if (
+        import.meta.env.MODE === 'test' ||
+        failureCount > 3 ||
+        err.type === 'cancelled' ||
+        err.type === 'timeout' ||
+        (err.type === 'http' && err.status < 500)
+      )
+        return false;
+      return true;
+    },
     onError(error) {
       if (axios.isAxiosError(error)) {
         if (error instanceof UnauthenticatedError || error.status === 401)
           updateAuth({ status: 'unauthenticated' });
 
         if (error.status === 404) console.error('Task not found');
-
-        console.error('Failed to delete task');
       }
     },
     async onSuccess(_, taskId) {

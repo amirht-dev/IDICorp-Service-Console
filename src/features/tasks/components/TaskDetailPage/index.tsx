@@ -5,6 +5,7 @@ import { Card, CardTitle } from '@/components/ui/Card';
 import {
   DetailCard,
   DetailCardContent,
+  DetailCardDescription,
   DetailCardHeader,
   DetailCardMedia,
   DetailCardTitle,
@@ -56,7 +57,8 @@ const TaskDetailPage = () => {
           <DetailCardMedia variant="icon">
             <TriangleAlertIcon />
           </DetailCardMedia>
-          <DetailCardTitle>
+          <DetailCardTitle>Failed to load task</DetailCardTitle>
+          <DetailCardDescription>
             {err.type === 'network'
               ? 'Unable to connect to server. Please try again.'
               : err.type === 'timeout'
@@ -68,7 +70,7 @@ const TaskDetailPage = () => {
                       ? 'Server is unavailable right now. Please try again later.'
                       : 'Failed to load task.'
                     : 'Something wrong happened while loading task. Please try again later.'}
-          </DetailCardTitle>
+          </DetailCardDescription>
         </DetailCardHeader>
         <DetailCardContent>
           <Button
